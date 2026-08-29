@@ -18,20 +18,39 @@ The current web frontend runs on Node.js. The Python virtual environment isolate
 
 ### First-time setup
 
-The recommended path is one setup command:
+Clone the repository into any directory and enter the project root. No user-specific absolute path is required.
 
 ```bash
-cd /Users/jung-yechan/EmbeddedSW
+git clone https://github.com/chaneepo/2026_ESW_HomeProtector.git
+cd 2026_ESW_HomeProtector
+```
+
+On macOS/Linux, run:
+
+```bash
 ./scripts/setup.sh
 ```
 
 The script checks Node.js, runs `npm ci`, creates or reuses `.venv`, upgrades pip, and installs `requirements-dev.txt`. It is safe to run again when dependencies change.
 
-To perform each step manually:
+On Windows PowerShell, run:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup.ps1
+```
+
+The command components are:
+
+- `powershell.exe`: starts Windows PowerShell
+- `-NoProfile`: skips personal PowerShell profiles for a consistent setup
+- `-ExecutionPolicy Bypass`: allows scripts for this process only and does not permanently change system policy
+- `-File .\scripts\setup.ps1`: runs the setup script from the current project
+
+`setup.ps1` verifies Node.js and npm and installs the frontend packages. It then looks for `py -3.12`, `python`, and `python3` in that order, creates `.venv\Scripts`, and installs `requirements-dev.txt`.
+
+To perform each step manually on macOS/Linux:
 
 ```bash
-cd /Users/jung-yechan/EmbeddedSW
-
 # Select Node.js when using nvm
 nvm install
 nvm use
@@ -50,11 +69,22 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
 
-On Windows PowerShell, activate it with:
+On Windows PowerShell, perform the equivalent setup with:
 
 ```powershell
-.venv\Scripts\Activate.ps1
+# Install frontend packages
+npm install
+
+# Create and activate the Python environment
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# Install environment tooling and all development dependencies
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
 ```
+
+Node.js packages are installed in the project's `node_modules`, not in the Python virtual environment. Both environments are local to the project and excluded from Git through `.gitignore`.
 
 ### Python dependency files
 
@@ -75,6 +105,8 @@ SQLAlchemy remains the database-neutral layer. No SQLite, PostgreSQL, or other d
 
 ### Verify the environment
 
+macOS/Linux:
+
 ```bash
 which python
 python --version
@@ -83,16 +115,33 @@ node --version
 npm --version
 ```
 
-`which python` should report `/Users/jung-yechan/EmbeddedSW/.venv/bin/python`. An active shell usually also displays `(.venv)` in the prompt.
+Windows PowerShell:
+
+```powershell
+(Get-Command python).Source
+python --version
+python -m pip --version
+node --version
+npm --version
+```
+
+On macOS/Linux, `which python` should point to `.venv/bin/python` inside the current project. On Windows, `(Get-Command python).Source` should point to `.venv\Scripts\python.exe`. An active shell usually also displays `(.venv)` in the prompt.
 
 ### Daily workflow
 
+macOS/Linux:
+
 ```bash
-cd /Users/jung-yechan/EmbeddedSW
 ./scripts/dev.sh
 ```
 
-`dev.sh` verifies `.venv` and `node_modules`, activates the Python environment, and starts the frontend. Open the local address printed by the development server. When FastAPI is implemented, its process can be added to the same script.
+Windows PowerShell:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev.ps1
+```
+
+Each `dev` script verifies the operating-system-specific `.venv` and `node_modules`, activates Python, and starts the frontend. Open the local address printed by the development server. When FastAPI is implemented, its process can be added to the same scripts.
 
 ### Manage Python packages
 
@@ -124,9 +173,20 @@ deactivate
 
 If the environment is damaged or the Python version changes, rebuild it as follows. This clears every package currently installed inside `.venv`.
 
+macOS/Linux:
+
 ```bash
 python3 -m venv --clear .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+```
+
+Windows PowerShell:
+
+```powershell
+py -3.12 -m venv --clear .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
@@ -169,7 +229,7 @@ views/        Feature views
 store/        Global state and orchestration
 services/     Domain service contracts and mock calls
 mocks/        Initial data and simulation engine
-scripts/      Unified setup and development commands
+scripts/      Unified setup and development commands for macOS/Linux and Windows
 types/        Shared TypeScript models
 docs/ko/      Korean technical documentation
 docs/en/      English technical documentation

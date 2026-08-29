@@ -28,13 +28,31 @@ CARE-PACK은 로봇을 이용해 외출 준비물을 가방에 적재하고 실�
 
 ## 환경 설정과 실행
 
-프론트엔드는 Node.js를 사용하고, 향후 백엔드·비전·로봇 제어 모듈은 Python 가상환경을 사용합니다. 다음 스크립트가 두 환경을 한 번에 준비하고 실행합니다.
+프론트엔드는 Node.js를 사용하고, 향후 백엔드·비전·로봇 제어 모듈은 Python 가상환경을 사용합니다. 저장소를 원하는 위치에 받은 뒤 운영체제에 맞는 스크립트를 실행합니다.
 
 ```bash
-cd /Users/jung-yechan/EmbeddedSW
-./scripts/setup.sh  # 최초 설치 또는 의존성 갱신
-./scripts/dev.sh    # 평소 개발 실행
+git clone https://github.com/chaneepo/2026_ESW_HomeProtector.git
+cd 2026_ESW_HomeProtector
 ```
+
+macOS/Linux:
+
+```bash
+./scripts/setup.sh
+./scripts/dev.sh
+```
+
+Windows PowerShell:
+
+```powershell
+# 최초 1회 환경 설치
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup.ps1
+
+# 평소 개발 서버 실행
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev.ps1
+```
+
+`-ExecutionPolicy Bypass`는 현재 실행에서만 PowerShell 스크립트를 허용하며 Windows의 설정을 영구 변경하지 않습니다. `-File` 뒤에는 실행할 스크립트 경로가 옵니다.
 
 설치 목록:
 
@@ -43,4 +61,4 @@ cd /Users/jung-yechan/EmbeddedSW
 
 현재 특정 데이터베이스 서버와 Python DB 드라이버는 설치하지 않습니다. 실제 데이터베이스를 선택한 뒤 별도 설치 목록으로 추가합니다.
 
-자세한 설명은 [한국어 개발 환경 설정](README.ko.md#개발-환경-설정)을 참고하세요.
+자세한 공용 설치 방법은 [한국어 개발 환경 설정](README.ko.md#개발-환경-설정)을 참고하세요.

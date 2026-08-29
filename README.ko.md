@@ -18,20 +18,39 @@ CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으�
 
 ### 최초 1회 설치
 
-권장 방법은 통합 설정 스크립트 한 번을 실행하는 것이다.
+저장소를 원하는 폴더에 복제하고 프로젝트 루트로 이동한다. 특정 사용자의 절대 경로는 필요하지 않다.
 
 ```bash
-cd /Users/jung-yechan/EmbeddedSW
+git clone https://github.com/chaneepo/2026_ESW_HomeProtector.git
+cd 2026_ESW_HomeProtector
+```
+
+macOS/Linux에서는 다음 통합 설정 스크립트를 실행한다.
+
+```bash
 ./scripts/setup.sh
 ```
 
 이 스크립트는 Node.js 버전을 확인하고 `npm ci`, `.venv` 생성, pip 업그레이드, `requirements-dev.txt` 설치를 순서대로 수행한다. 이미 생성된 `.venv`는 재사용하므로 의존성을 갱신할 때 다시 실행해도 된다.
 
-각 단계를 직접 실행하려면 다음 명령을 사용한다.
+Windows PowerShell에서는 다음 명령을 실행한다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup.ps1
+```
+
+명령의 의미는 다음과 같다.
+
+- `powershell.exe`: Windows PowerShell 실행
+- `-NoProfile`: 개인 PowerShell 설정을 불러오지 않고 동일한 조건에서 실행
+- `-ExecutionPolicy Bypass`: 이 실행에서만 스크립트 실행을 허용하며 시스템 정책은 영구 변경하지 않음
+- `-File .\scripts\setup.ps1`: 현재 프로젝트의 환경 설정 스크립트 실행
+
+`setup.ps1`은 Node.js와 npm을 확인하고 프론트엔드 패키지를 설치한다. 이어서 Windows의 `py -3.12`, `python`, `python3` 순서로 Python을 찾아 `.venv\Scripts`에 가상환경을 만들고 `requirements-dev.txt`를 설치한다.
+
+macOS/Linux에서 각 단계를 직접 실행하려면 다음 명령을 사용한다.
 
 ```bash
-cd /Users/jung-yechan/EmbeddedSW
-
 # Node.js 버전 선택: nvm 사용 시
 nvm install
 nvm use
@@ -50,11 +69,22 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
 
-Windows PowerShell에서는 다음 명령으로 활성화한다.
+Windows PowerShell에서 수동으로 가상환경을 활성화하려면 다음 명령을 사용한다.
 
 ```powershell
-.venv\Scripts\Activate.ps1
+# 프론트엔드 패키지 설치
+npm install
+
+# Python 가상환경 생성 및 활성화
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# 가상환경 내부 도구와 전체 개발 의존성 설치
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
 ```
+
+Node.js 패키지는 Python 가상환경에 넣지 않고 프로젝트의 `node_modules`에 설치된다. 두 환경 모두 프로젝트 폴더 안에 생성되며 `.gitignore`로 Git에서 제외된다.
 
 ### Python 설치 목록
 
@@ -75,6 +105,8 @@ SQLAlchemy는 DB 종류에 독립적인 계층으로 유지한다. 현재는 SQL
 
 ### 환경 확인
 
+macOS/Linux:
+
 ```bash
 which python
 python --version
@@ -83,16 +115,33 @@ node --version
 npm --version
 ```
 
-`which python` 결과는 `/Users/jung-yechan/EmbeddedSW/.venv/bin/python`이어야 한다. 프롬프트 앞에 `(.venv)`가 표시되는 것으로도 활성화를 확인할 수 있다.
+Windows PowerShell:
+
+```powershell
+(Get-Command python).Source
+python --version
+python -m pip --version
+node --version
+npm --version
+```
+
+macOS/Linux의 `which python` 결과는 현재 프로젝트의 `.venv/bin/python`이어야 한다. Windows의 `(Get-Command python).Source` 결과는 현재 프로젝트의 `.venv\Scripts\python.exe`여야 한다. 프롬프트 앞에 `(.venv)`가 표시되는 것으로도 활성화를 확인할 수 있다.
 
 ### 매일 작업 시작
 
+macOS/Linux:
+
 ```bash
-cd /Users/jung-yechan/EmbeddedSW
 ./scripts/dev.sh
 ```
 
-`dev.sh`는 `.venv`와 `node_modules`를 확인하고 Python 가상환경을 활성화한 뒤 프론트엔드 서버를 시작한다. 개발 서버가 출력하는 로컬 주소를 브라우저에서 연다. 향후 FastAPI가 추가되면 같은 스크립트에 백엔드 실행을 연결한다.
+Windows PowerShell:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev.ps1
+```
+
+각 `dev` 스크립트는 운영체제에 맞는 `.venv`와 `node_modules`를 확인하고 Python 가상환경을 활성화한 뒤 프론트엔드 서버를 시작한다. 개발 서버가 출력하는 로컬 주소를 브라우저에서 연다. 향후 FastAPI가 추가되면 같은 스크립트에 백엔드 실행을 연결한다.
 
 ### Python 패키지 관리
 
@@ -124,9 +173,20 @@ deactivate
 
 가상환경이 손상되었거나 Python 버전이 달라졌다면 다음과 같이 다시 만든다. 이 명령은 `.venv` 안에 설치된 패키지를 모두 초기화한다.
 
+macOS/Linux:
+
 ```bash
 python3 -m venv --clear .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+```
+
+Windows PowerShell:
+
+```powershell
+py -3.12 -m venv --clear .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
@@ -169,7 +229,7 @@ views/        기능별 화면
 store/        전역 상태와 실행 조정
 services/     도메인 서비스 계약과 mock 호출
 mocks/        초기 데이터와 시뮬레이션 엔진
-scripts/      통합 환경 설정과 개발 실행
+scripts/      macOS/Linux·Windows 통합 환경 설정과 개발 실행
 types/        공통 TypeScript 모델
 docs/ko/      한국어 기술 문서
 docs/en/      영어 기술 문서
