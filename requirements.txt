@@ -1,0 +1,15 @@
+# CARE-PACK Python 실행 의존성 (Python 3.12)
+
+# 백엔드 API와 환경 설정
+fastapi[standard-no-fastapi-cloud-cli]==0.141.1
+pydantic-settings==2.15.0
+
+# DB 중립 ORM: 실제 DB를 선택한 뒤 해당 드라이버를 추가한다.
+SQLAlchemy==2.0.52
+
+# 비전: OpenCV contrib는 ArUco와 AprilTag 사전을 포함한다.
+numpy==2.5.2
+opencv-contrib-python==4.14.0.94
+
+# SO-ARM101/ESP32 직렬 통신 기반 패키지
+pyserial==3.5

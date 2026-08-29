@@ -1,53 +1,46 @@
-# CARE-PACK 프론트엔드
+# CARE-PACK 제어센터
 
-취약계층의 안전한 외출 준비를 돕는 임베디드 스마트홈 로봇 제어 시스템의 첫 프론트엔드입니다. 현재는 물리 장치를 제어하지 않는 시뮬레이션 모드로 동작합니다.
+CARE-PACK은 로봇을 이용해 외출 준비물을 가방에 적재하고 실제 적재 성공 여부를 검증하는 생활 보조 시스템입니다.
 
-## 실행
+- [한국어 상세 안내와 실행 방법](README.ko.md)
+- [English guide and setup](README.en.md)
+- 배포된 데모: [care-pack-control.chaneepo500.chatgpt.site](https://care-pack-control.chaneepo500.chatgpt.site/)
+
+> 현재 저장소에는 제어센터 프론트엔드와 실행 시뮬레이션이 구현되어 있습니다. SO-ARM101, 카메라, 센서, 백엔드 API, 데이터베이스는 아직 실제 장비와 연결되지 않았습니다.
+
+## 기술 문서
+
+| 주제 | 한국어 | English |
+|---|---|---|
+| 프로젝트 개요 | [프로젝트 개요](docs/ko/00_PROJECT_OVERVIEW.md) | [Project Overview](docs/en/00_PROJECT_OVERVIEW.md) |
+| 시스템 구조 | [시스템 아키텍처](docs/ko/01_SYSTEM_ARCHITECTURE.md) | [System Architecture](docs/en/01_SYSTEM_ARCHITECTURE.md) |
+| 프론트엔드 | [프론트엔드 구조](docs/ko/02_FRONTEND_STRUCTURE.md) | [Frontend Structure](docs/en/02_FRONTEND_STRUCTURE.md) |
+| 백엔드 API | [백엔드 API 명세](docs/ko/03_BACKEND_API_SPEC.md) | [Backend API Specification](docs/en/03_BACKEND_API_SPEC.md) |
+| 상태기계 | [상태기계](docs/ko/04_STATE_MACHINE.md) | [State Machine](docs/en/04_STATE_MACHINE.md) |
+| 비전 | [비전 시스템 설계](docs/ko/05_VISION_DESIGN.md) | [Vision System Design](docs/en/05_VISION_DESIGN.md) |
+| SO-ARM101 | [SO-ARM101 인터페이스](docs/ko/06_SO_ARM101_INTERFACE.md) | [SO-ARM101 Interface](docs/en/06_SO_ARM101_INTERFACE.md) |
+| 데이터베이스 | [데이터베이스 스키마](docs/ko/07_DATABASE_SCHEMA.md) | [Database Schema](docs/en/07_DATABASE_SCHEMA.md) |
+| 시뮬레이션 | [시뮬레이션 모드](docs/ko/08_SIMULATION_MODE.md) | [Simulation Mode](docs/en/08_SIMULATION_MODE.md) |
+| 이벤트 로그 | [이벤트 로그 명세](docs/ko/09_EVENT_LOG_SPEC.md) | [Event Log Specification](docs/en/09_EVENT_LOG_SPEC.md) |
+| 실패 복구 | [실패 복구](docs/ko/10_FAILURE_RECOVERY.md) | [Failure Recovery](docs/en/10_FAILURE_RECOVERY.md) |
+| 개발 계획 | [개발 로드맵](docs/ko/11_DEVELOPMENT_ROADMAP.md) | [Development Roadmap](docs/en/11_DEVELOPMENT_ROADMAP.md) |
+| 팀 연동 규칙 | [팀 인터페이스 가이드](docs/ko/12_TEAM_INTERFACE.md) | [Team Interface Guide](docs/en/12_TEAM_INTERFACE.md) |
+
+## 환경 설정과 실행
+
+프론트엔드는 Node.js를 사용하고, 향후 백엔드·비전·로봇 제어 모듈은 Python 가상환경을 사용합니다. 다음 스크립트가 두 환경을 한 번에 준비하고 실행합니다.
 
 ```bash
-npm install
-npm run dev
+cd /Users/jung-yechan/EmbeddedSW
+./scripts/setup.sh  # 최초 설치 또는 의존성 갱신
+./scripts/dev.sh    # 평소 개발 실행
 ```
 
-배포 빌드는 `npm run build`로 검증합니다.
+설치 목록:
 
-## 구현된 기능
+- `requirements.txt`: 백엔드 실행 환경, DB 중립 ORM, 비전, 시리얼 통신 패키지
+- `requirements-dev.txt`: 실행 패키지 전체와 테스트·정적 검사 도구
 
-- 한국어 전용 제어 센터 네비게이션과 대시보드
-- 시뮬레이션 모드와 실행 상태 기계
-- `계획 → 탐지 → 파지 → 이동 → 배치 → 검증 → 완료` 자동 작업
-- 파지/검증 실패, 회복, 재시도 시뮬레이션
-- SO-ARM101 수동 명령 인터페이스
-- 3×3 작업 영역과 AprilTag 가상 탐지
-- 물품 마스터 추가·수정·삭제·활성화
-- 작업 이력과 이벤트 로그, 성공률·재시도·소요 시간 요약
-- 비상 정지 및 수동 해제
+현재 특정 데이터베이스 서버와 Python DB 드라이버는 설치하지 않습니다. 실제 데이터베이스를 선택한 뒤 별도 설치 목록으로 추가합니다.
 
-## 아직 구현되지 않은 항목
-
-- FastAPI 백엔드와 SQLite 영구 저장소
-- 실제 SO-ARM101, RGB 카메라, AprilTag 인식
-- ESP32 센서, Razbot, 적재 검증 센서
-- 백엔드 WebSocket 실시간 업데이트
-
-## 아키텍처
-
-UI는 목 데이터에 직접 의존하지 않습니다.
-
-```text
-React 페이지/컴포넌트
-  ↓
-SystemProvider 중앙 상태
-  ↓
-services/* 서비스 계층
-  ↓
-mocks/* 시뮬레이션 어댑터
-```
-
-실제 백엔드가 준비되면 `services/` 내부 구현만 Fetch API로 교체합니다. UI와 타입, 전역 상태 구조는 유지합니다. 실시간 WebSocket도 `SystemProvider`에 연결해 페이지별 새로고침 없이 상태를 갱신하도록 설계했습니다.
-
-## 안전 원칙
-
-- React에서 로봇 SDK를 직접 호출하지 않습니다.
-- 명령 성공과 실제 작업 성공을 구분하며, 검증 후에만 완료로 처리합니다.
-- ESP32와 Razbot은 실제로 연결되지 않았으므로 오프라인으로 표시합니다.
+자세한 설명은 [한국어 개발 환경 설정](README.ko.md#개발-환경-설정)을 참고하세요.

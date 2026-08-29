@@ -1,0 +1,194 @@
+# CARE-PACK 제어센터
+
+CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으로 옮기며, 센서로 실제 적재 여부를 확인하는 생활 보조 시스템이다. 이 저장소에는 현재 한국어 제어센터 UI와 장비 연동 전 시뮬레이션이 구현되어 있다.
+
+> 현재 화면의 로봇, 비전, 센서 상태는 시뮬레이션이다. 실제 SO-ARM101, 카메라, ESP32, 데이터베이스, 백엔드는 아직 연결되어 있지 않다.
+
+## 개발 환경 설정
+
+현재 웹 프론트엔드는 Node.js로 실행한다. Python 가상환경은 앞으로 추가할 FastAPI 백엔드, OpenCV 비전, SO-ARM101 제어 모듈의 패키지를 시스템 Python과 분리하기 위해 사용한다.
+
+### 필요 환경
+
+- Node.js 22.13 이상 (`.nvmrc`: `22.13.0`)
+- npm
+- Python 3.12.2 (`.python-version`: `3.12.2`)
+
+`nvm` 또는 `pyenv`는 필수가 아니다. 설치되어 있다면 프로젝트의 버전 파일을 이용할 수 있다.
+
+### 최초 1회 설치
+
+권장 방법은 통합 설정 스크립트 한 번을 실행하는 것이다.
+
+```bash
+cd /Users/jung-yechan/EmbeddedSW
+./scripts/setup.sh
+```
+
+이 스크립트는 Node.js 버전을 확인하고 `npm ci`, `.venv` 생성, pip 업그레이드, `requirements-dev.txt` 설치를 순서대로 수행한다. 이미 생성된 `.venv`는 재사용하므로 의존성을 갱신할 때 다시 실행해도 된다.
+
+각 단계를 직접 실행하려면 다음 명령을 사용한다.
+
+```bash
+cd /Users/jung-yechan/EmbeddedSW
+
+# Node.js 버전 선택: nvm 사용 시
+nvm install
+nvm use
+
+# 프론트엔드 패키지 설치
+npm install
+
+# Python 가상환경 생성
+python3 -m venv .venv
+
+# macOS/Linux 가상환경 활성화
+source .venv/bin/activate
+
+# 가상환경 내부 도구와 전체 개발 의존성 설치
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+```
+
+Windows PowerShell에서는 다음 명령으로 활성화한다.
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+### Python 설치 목록
+
+| 파일 | 용도 | 주요 패키지 |
+|---|---|---|
+| `requirements.txt` | 실행 환경 | FastAPI, pydantic-settings, SQLAlchemy, NumPy, OpenCV contrib, pyserial |
+| `requirements-dev.txt` | 개발·테스트 환경 | 실행 환경 전체 + pytest, pytest-asyncio, Ruff, mypy |
+
+일반 개발자는 `requirements-dev.txt` 하나만 설치하면 된다. 실행 패키지만 필요한 장치나 배포 환경에서는 다음처럼 설치한다.
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+OpenCV contrib 패키지는 ArUco와 AprilTag marker 기능을 포함하기 위해 선택했다. `pyserial`은 SO-ARM101 또는 ESP32의 직렬 통신 기반선이며, 전용 로봇 SDK는 실제 연결 방식이 확정된 뒤 별도로 추가한다.
+
+SQLAlchemy는 DB 종류에 독립적인 계층으로 유지한다. 현재는 SQLite, PostgreSQL 등 특정 DB driver를 설치하지 않으며 실제 DB를 선택한 뒤 별도 requirements 파일로 추가한다.
+
+### 환경 확인
+
+```bash
+which python
+python --version
+python -m pip --version
+node --version
+npm --version
+```
+
+`which python` 결과는 `/Users/jung-yechan/EmbeddedSW/.venv/bin/python`이어야 한다. 프롬프트 앞에 `(.venv)`가 표시되는 것으로도 활성화를 확인할 수 있다.
+
+### 매일 작업 시작
+
+```bash
+cd /Users/jung-yechan/EmbeddedSW
+./scripts/dev.sh
+```
+
+`dev.sh`는 `.venv`와 `node_modules`를 확인하고 Python 가상환경을 활성화한 뒤 프론트엔드 서버를 시작한다. 개발 서버가 출력하는 로컬 주소를 브라우저에서 연다. 향후 FastAPI가 추가되면 같은 스크립트에 백엔드 실행을 연결한다.
+
+### Python 패키지 관리
+
+반드시 활성화된 환경에서 `python -m pip` 형식으로 설치한다.
+
+```bash
+python -m pip install <패키지명>
+python -m pip list
+```
+
+팀에서 사용할 직접 의존성과 검증된 버전만 해당 requirements 파일에 기록한다. 임시 실험 패키지는 확정하기 전까지 커밋하지 않는다. `.venv` 디렉터리는 `.gitignore`에 포함되어 있으므로 Git에 올라가지 않는다.
+
+설치된 핵심 패키지를 확인하는 명령은 다음과 같다.
+
+```bash
+python -c "import cv2, fastapi, numpy, serial, sqlalchemy; print('Python dependencies OK')"
+python -m pytest --version
+python -m ruff --version
+python -m mypy --version
+```
+
+### 종료와 재생성
+
+작업을 끝내면 다음 명령으로 가상환경을 종료한다.
+
+```bash
+deactivate
+```
+
+가상환경이 손상되었거나 Python 버전이 달라졌다면 다음과 같이 다시 만든다. 이 명령은 `.venv` 안에 설치된 패키지를 모두 초기화한다.
+
+```bash
+python3 -m venv --clear .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+```
+
+### 빌드와 실행
+
+개발 실행:
+
+```bash
+npm run dev
+```
+
+배포 빌드 확인은 다음과 같다.
+
+```bash
+npm run build
+npm run start
+```
+
+가상환경 활성화 여부는 현재 Node.js 프론트엔드 빌드 결과에 영향을 주지 않는다.
+
+## 현재 가능한 기능
+
+- 대시보드와 장치 상태 확인
+- PACK/SORT 작업 시뮬레이션
+- PICK 또는 VERIFY 실패 1회 주입과 복구 흐름
+- 모의 SO-ARM101 수동 명령
+- 모의 비전 인식과 3×3 보관함 표시
+- 메모리 기반 물품 관리와 작업 이력
+- UI 비상정지와 수동 초기화
+
+데이터는 새로고침하면 초기화된다. 실제 장치나 API를 제어하지 않는다.
+
+## 코드 구조
+
+```text
+app/          앱 진입점과 레이아웃
+components/   제어센터 셸과 공통 UI
+views/        기능별 화면
+store/        전역 상태와 실행 조정
+services/     도메인 서비스 계약과 mock 호출
+mocks/        초기 데이터와 시뮬레이션 엔진
+scripts/      통합 환경 설정과 개발 실행
+types/        공통 TypeScript 모델
+docs/ko/      한국어 기술 문서
+docs/en/      영어 기술 문서
+```
+
+## 문서
+
+- [프로젝트 개요](docs/ko/00_PROJECT_OVERVIEW.md)
+- [시스템 아키텍처](docs/ko/01_SYSTEM_ARCHITECTURE.md)
+- [프론트엔드 구조](docs/ko/02_FRONTEND_STRUCTURE.md)
+- [백엔드 API 명세](docs/ko/03_BACKEND_API_SPEC.md)
+- [상태기계](docs/ko/04_STATE_MACHINE.md)
+- [비전 시스템 설계](docs/ko/05_VISION_DESIGN.md)
+- [SO-ARM101 인터페이스](docs/ko/06_SO_ARM101_INTERFACE.md)
+- [데이터베이스 스키마](docs/ko/07_DATABASE_SCHEMA.md)
+- [시뮬레이션 모드](docs/ko/08_SIMULATION_MODE.md)
+- [이벤트 로그 명세](docs/ko/09_EVENT_LOG_SPEC.md)
+- [실패 복구](docs/ko/10_FAILURE_RECOVERY.md)
+- [개발 로드맵](docs/ko/11_DEVELOPMENT_ROADMAP.md)
+- [팀 인터페이스 가이드](docs/ko/12_TEAM_INTERFACE.md)
+
+영문 안내는 [README.en.md](README.en.md)를 참고한다.
