@@ -1,162 +1,103 @@
-# Database Schema
+# PostgreSQL Database Structure
 
-## 1. Current status
+## 1. Implementation status
 
-Current data exists only in `mocks/mockData.ts` and React memory and resets on reload. No database or migrations are implemented. The following is a **planned schema** for an initial SQLite backend.
+The repository now includes a PostgreSQL 17 development database, SQLAlchemy 2 models, Alembic migrations, an explicit development seed command, and database tests under `backend/`. Frontend `services/*.ts` still use React in-memory mocks and do not call this backend yet.
 
-## 2. Relationship overview
+Exactly seven application tables are implemented:
+
+```text
+locations
+items
+routines
+routine_items
+jobs
+job_items
+job_events
+```
+
+Alembic's internal `alembic_version` table is not an application table.
+
+## 2. Relationships
 
 ```mermaid
 erDiagram
-    USERS ||--o{ SCHEDULES : owns
-    USERS ||--o{ JOBS : requests
+    LOCATIONS ||--o{ ITEMS : home_location
+    ROUTINES ||--o{ ROUTINE_ITEMS : configures
+    ITEMS ||--o{ ROUTINE_ITEMS : included_in
+    LOCATIONS ||--o{ ROUTINE_ITEMS : target
+    ROUTINES ||--o{ JOBS : instantiates
     JOBS ||--|{ JOB_ITEMS : contains
     ITEMS ||--o{ JOB_ITEMS : referenced_by
-    JOBS ||--o{ EVENT_LOGS : emits
-    ITEMS ||--o{ EVENT_LOGS : concerns
-    DEVICES ||--o{ DEVICE_STATUS_HISTORY : reports
+    LOCATIONS ||--o{ JOB_ITEMS : source_or_target
+    JOBS ||--o{ JOB_EVENTS : emits
+    JOB_ITEMS ||--o{ JOB_EVENTS : concerns
 ```
 
-## 3. Conventions
+## 3. Shared rules
 
-- Use string UUIDs or sortable unique IDs.
-- Store timestamps in UTC.
-- Keep application enums aligned with DB constraints.
-- Treat event records as append-only.
-- Minimize personal data and define authorization and retention.
+- Primary keys use PostgreSQL `UUID`.
+- Timestamps use timezone-aware `TIMESTAMPTZ` values.
+- Variable structured data uses `JSONB`.
+- Python enums and database `CHECK` constraints enforce status values.
+- Master and execution tables contain `created_at` and `updated_at` where appropriate.
+- Retry counts cannot be negative and processing sequences must be positive.
+- Master records should normally be deactivated with `is_active=false`, not deleted.
 
 ## 4. Tables
 
-### `users`
+### `locations`
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| display_name | TEXT | NOT NULL |
-| role | TEXT | `USER`, `GUARDIAN`, `OPERATOR`, `ADMIN` |
-| locale | TEXT | Default `ko-KR` |
-| accessibility_profile_json | TEXT | Optional JSON |
-| created_at | TEXT | NOT NULL |
-| updated_at | TEXT | NOT NULL |
+Stores source locations, destinations, optional grid cells, and robot coordinates. `code` and `name` are unique and non-empty. Robot coordinates are nullable and `is_active` defaults to true.
 
 ### `items`
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| name | TEXT | NOT NULL |
-| category | TEXT | NOT NULL |
-| marker_id | TEXT | UNIQUE, optional |
-| storage_location | TEXT | Example: `A1` |
-| default_destination | TEXT | Example: `outing-bag` |
-| grasp_profile_json | TEXT | Approach and grasp settings |
-| enabled | INTEGER | 0/1 |
-| created_at | TEXT | NOT NULL |
-| updated_at | TEXT | NOT NULL |
+Maps AprilTag identifiers to physical items. `tag_id` is unique. An item stores only its normal `home_location_id`; routine-specific and actual execution destinations are not stored permanently on the item.
 
-### `schedules`
+### `routines` and `routine_items`
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| user_id | TEXT | FK → users.id |
-| purpose | TEXT | Hospital, walk, etc. |
-| starts_at | TEXT | NOT NULL |
-| destination | TEXT | Optional |
-| weather_context_json | TEXT | Weather snapshot used for planning |
-| status | TEXT | `PLANNED`, `ACTIVE`, `DONE`, `CANCELLED` |
-| created_at | TEXT | NOT NULL |
-| updated_at | TEXT | NOT NULL |
+`routines` stores reusable definitions such as `OUTING_PREP` and `RETURN_HOME`. `routine_items` assigns items, destinations, positive processing order, and required flags.
+
+- The same item cannot appear twice in one routine.
+- Processing sequence numbers are unique within a routine and must be positive.
+- Deleting a routine cascades only to its configuration rows.
+- Referenced items and target locations use restrictive deletion.
 
 ### `jobs`
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| request_id | TEXT | UNIQUE idempotency key |
-| user_id | TEXT | Optional FK → users.id |
-| schedule_id | TEXT | Optional FK → schedules.id |
-| type | TEXT | `PACK`, `SORT` |
-| status | TEXT | `WAITING`, `RUNNING`, `SUCCESS`, `FAILED`, `CANCELLED` |
-| execution_state | TEXT | State-machine value |
-| destination | TEXT | Target location |
-| progress | INTEGER | 0–100 |
-| retry_count | INTEGER | Default 0 |
-| error_code | TEXT | Optional final error |
-| started_at | TEXT | Optional |
-| completed_at | TEXT | Optional |
-| created_at | TEXT | NOT NULL |
-| updated_at | TEXT | NOT NULL |
+Represents one routine execution. Modes are `SIMULATION` and `REAL`; statuses are `WAITING`, `RUNNING`, `SUCCESS`, `FAILED`, and `STOPPED`.
+
+Execution steps are `IDLE`, `PLAN`, `DETECT`, `PICK`, `MOVE`, `PLACE`, `VERIFY`, `RECOVER`, `COMPLETE`, and `ERROR`. Routine code and name snapshots preserve the original execution context after master-data changes.
 
 ### `job_items`
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| job_id | TEXT | FK → jobs.id |
-| item_id | TEXT | FK → items.id |
-| sequence_no | INTEGER | Order within the job |
-| source_location | TEXT | Source |
-| destination | TEXT | Target |
-| status | TEXT | `WAITING`, `RUNNING`, `SUCCESS`, `FAILED`, `SKIPPED` |
-| execution_state | TEXT | Current item step |
-| retry_count | INTEGER | Default 0 |
-| verification_json | TEXT | Sensor and vision evidence |
-| error_code | TEXT | Optional |
-| started_at | TEXT | Optional |
-| completed_at | TEXT | Optional |
+Stores per-item execution results, actual source and destination references, retry state, and timestamps. Item/tag and location code/name snapshots preserve history after master records are renamed or removed. Master foreign keys use `SET NULL`; snapshots remain intact. Job deletion is restricted when item history exists.
 
-Use `UNIQUE(job_id, sequence_no)`.
+### `job_events`
 
-### `event_logs`
+Append-only events record state transitions, device results, verification, errors, emergency stops, and retries. Indexes support `job_id`, `job_item_id`, `event_type`, `created_at`, and chronological per-job queries. Item-level events must also identify their job, and the service layer verifies that the job and item belong together.
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| occurred_at | TEXT | NOT NULL, indexed |
-| level | TEXT | `INFO`, `SUCCESS`, `WARNING`, `ERROR` |
-| source | TEXT | `SYSTEM`, `VISION`, `ARM`, `ESP32`, `RAZBOT` |
-| event_code | TEXT | NOT NULL, indexed |
-| message | TEXT | Operator-facing text |
-| job_id | TEXT | Optional FK, indexed |
-| item_id | TEXT | Optional FK |
-| command_id | TEXT | Optional |
-| metadata_json | TEXT | Structured details |
+## 5. Deletion and history policy
 
-### `devices`
+- Only routine configuration rows cascade with their parent routine.
+- Deleting a routine sets historical `jobs.routine_id` to null while snapshots remain.
+- Deleting item or location masters sets historical foreign keys to null while snapshots remain.
+- No broad cascade is used across `jobs`, `job_items`, and `job_events`.
+- Database constraints reject accidental deletion of a job that still owns item or event history.
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| type | TEXT | `ARM`, `VISION`, `ESP32`, `RAZBOT` |
-| name | TEXT | NOT NULL |
-| adapter_version | TEXT | Optional |
-| enabled | INTEGER | 0/1 |
-| config_json | TEXT | Non-secret configuration |
+## 6. Development seed
 
-### `device_status_history`
+Development and simulation data is inserted only by the explicit `python -m backend.app.seed` command. It is never inserted automatically on application startup. The seed resolves references by stable codes and tags and can run repeatedly without duplicates. It contains five locations, five items, two routines, and eight routine-item assignments.
 
-| Column | Type | Constraint/meaning |
-|---|---|---|
-| id | TEXT | PK |
-| device_id | TEXT | FK → devices.id |
-| status | TEXT | `ONLINE`, `OFFLINE`, `BUSY`, `ERROR` |
-| detail_json | TEXT | Error or measurement details |
-| observed_at | TEXT | NOT NULL, indexed |
+## 7. Storage boundaries
 
-## 5. Integrity and retention
+Persist meaningful evidence such as job lifecycle events, final detection results, PICK/PLACE/VERIFY outcomes, failures, retries, and emergency stops. Keep camera frames, continuous joint coordinates, high-frequency sensor readings, WebSocket state, UI state, and animation state in memory or real-time channels. Store large media externally and persist only a relative path or URL.
 
-- Disable rather than physically delete items referenced by active jobs.
-- Update final job and job-item states in one transaction.
-- Buffer event writes so a logging failure does not compromise control safety.
-- Evaluate SQLite WAL mode and a single-writer policy for the MVP.
-- If images are retained, use separate object storage with access and retention controls.
+## 8. Not implemented yet
 
-## 6. Migration order
+- `/api/v1` CRUD routes for items, routines, and jobs
+- Frontend integration with the backend API
+- Authentication, authorization, and production backup policy
+- Robot, vision, and sensor event integration
 
-1. items, jobs, job_items, event_logs
-2. devices and status history
-3. users and schedules
-4. sensor measurement and calibration-version tables
-5. Migrate to PostgreSQL or another operational DB when concurrency requires it
-
+FastAPI currently exposes only `GET /health` for database connectivity.

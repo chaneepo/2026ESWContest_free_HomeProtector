@@ -41,13 +41,13 @@ flowchart TD
     EXEC --> VISION[Vision Adapter]
     EXEC --> SENSOR[ESP32 Sensor Adapter]
     EXEC --> RAZ[Future Razbot Adapter]
-    API --> DB[(SQLite or production DB)]
+    API --> DB[(PostgreSQL 17)]
     CORE --> EVENTS[Event Log]
     EVENTS --> DB
     EVENTS --> WEB
 ```
 
-This is the planned architecture, not an implemented server topology.
+The database layer and FastAPI health check are implemented; business APIs, Core, and device adapters remain the planned topology.
 
 ## 4. Layer responsibilities
 
@@ -76,4 +76,3 @@ Details are in [Backend API Specification](03_BACKEND_API_SPEC.md), [SO-ARM101 I
 ## 6. Safety boundary
 
 The current emergency stop cancels the simulation and changes the UI state to `ERROR`. A physical deployment must also enforce a hardware E-stop, controller-level stop, motion limits, collision controls, timeouts, and safe reset conditions. The browser button alone is not a safety mechanism.
-

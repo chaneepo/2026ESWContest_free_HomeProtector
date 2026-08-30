@@ -2,7 +2,7 @@
 
 CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으로 옮기며, 센서로 실제 적재 여부를 확인하는 생활 보조 시스템이다. 이 저장소에는 현재 한국어 제어센터 UI와 장비 연동 전 시뮬레이션이 구현되어 있다.
 
-> 현재 화면의 로봇, 비전, 센서 상태는 시뮬레이션이다. 실제 SO-ARM101, 카메라, ESP32, 데이터베이스, 백엔드는 아직 연결되어 있지 않다.
+> 현재 화면의 로봇, 비전, 센서 상태는 시뮬레이션이다. PostgreSQL 모델·마이그레이션·시드는 구현되었지만 실제 SO-ARM101, 카메라, ESP32와 업무 API의 프론트엔드 연결은 아직 구현되지 않았다.
 
 ## 개발 환경 설정
 
@@ -13,6 +13,7 @@ CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으�
 - Node.js 22.13 이상 (`.nvmrc`: `22.13.0`)
 - npm
 - Python 3.12.2 (`.python-version`: `3.12.2`)
+- Docker Desktop 또는 Docker Engine과 Docker Compose
 
 `nvm` 또는 `pyenv`는 필수가 아니다. 설치되어 있다면 프로젝트의 버전 파일을 이용할 수 있다.
 
@@ -90,7 +91,7 @@ Node.js 패키지는 Python 가상환경에 넣지 않고 프로젝트의 `node_
 
 | 파일 | 용도 | 주요 패키지 |
 |---|---|---|
-| `requirements.txt` | 실행 환경 | FastAPI, pydantic-settings, SQLAlchemy, NumPy, OpenCV contrib, pyserial |
+| `requirements.txt` | 실행 환경 | FastAPI, pydantic-settings, SQLAlchemy, psycopg, NumPy, OpenCV contrib, pyserial |
 | `requirements-dev.txt` | 개발·테스트 환경 | 실행 환경 전체 + pytest, pytest-asyncio, Ruff, mypy |
 
 일반 개발자는 `requirements-dev.txt` 하나만 설치하면 된다. 실행 패키지만 필요한 장치나 배포 환경에서는 다음처럼 설치한다.
@@ -101,7 +102,112 @@ python -m pip install -r requirements.txt
 
 OpenCV contrib 패키지는 ArUco와 AprilTag marker 기능을 포함하기 위해 선택했다. `pyserial`은 SO-ARM101 또는 ESP32의 직렬 통신 기반선이며, 전용 로봇 SDK는 실제 연결 방식이 확정된 뒤 별도로 추가한다.
 
-SQLAlchemy는 DB 종류에 독립적인 계층으로 유지한다. 현재는 SQLite, PostgreSQL 등 특정 DB driver를 설치하지 않으며 실제 DB를 선택한 뒤 별도 requirements 파일로 추가한다.
+SQLAlchemy는 ORM 계층으로 사용하고 PostgreSQL 연결에는 psycopg 3을 사용한다. `requirements-dev.txt`가 `requirements.txt`를 포함하므로 일반 개발환경에서도 PostgreSQL 드라이버가 함께 설치된다.
+
+### PostgreSQL Docker 설정
+
+PostgreSQL 17은 `compose.yaml`의 `db` 서비스로 실행한다. 데이터는 `postgres_data` Docker 볼륨에 저장되므로 컨테이너를 다시 만들어도 유지된다. 호스트 포트는 외부 네트워크에 공개하지 않고 `127.0.0.1`에만 연결한다.
+
+최초 1회 환경변수 예시를 로컬 `.env`로 복사한다. `.env`에는 개발자별 비밀번호가 있으므로 Git에 올라가지 않는다.
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+복사한 `.env`에서 `POSTGRES_PASSWORD`와 `DATABASE_URL`의 비밀번호를 동일하게 변경한 뒤 DB를 실행한다.
+
+```bash
+docker compose up -d db
+docker compose ps
+```
+
+DB 로그와 직접 접속 명령은 다음과 같다.
+
+```bash
+docker compose logs -f db
+docker compose exec db psql -U care_pack -d care_pack
+```
+
+종료와 재실행:
+
+```bash
+docker compose stop db
+docker compose start db
+```
+
+컨테이너만 제거할 때는 `docker compose down`을 사용한다. `docker compose down -v`는 `postgres_data` 볼륨과 모든 DB 데이터를 삭제하므로 완전 초기화가 필요한 경우에만 사용한다.
+
+호스트의 FastAPI 백엔드는 `.env`의 `localhost:5432` 주소를 사용한다. 나중에 백엔드도 Compose 서비스로 옮기면 호스트 이름을 `localhost`에서 `db`로 변경한다.
+
+### DB 마이그레이션과 시드
+
+빈 DB에 현재 스키마를 생성하거나 기존 DB를 최신 버전으로 올린다.
+
+```bash
+python -m alembic -c backend/alembic.ini upgrade head
+```
+
+현재 마이그레이션 확인과 모델 일치 검사:
+
+```bash
+python -m alembic -c backend/alembic.ini current
+python -m alembic -c backend/alembic.ini check
+```
+
+개발/시뮬레이션용 위치 5개, 물품 5개, 루틴 2개와 루틴 구성을 명시적으로 넣는다. 여러 번 실행해도 중복되지 않으며 애플리케이션 시작 시 자동 실행되지 않는다.
+
+```bash
+python -m backend.app.seed
+```
+
+구현된 애플리케이션 테이블은 다음 일곱 개다.
+
+```text
+locations, items, routines, routine_items, jobs, job_items, job_events
+```
+
+### DB 테스트와 FastAPI 상태 확인
+
+DB 테스트는 정상 개발 DB를 건드리지 않고 이름이 `_test`로 끝나는 별도 데이터베이스를 생성해 마이그레이션 왕복, 제약조건, 관계, 시드 멱등성과 실행 이력 보호를 확인한 뒤 삭제한다.
+
+```bash
+python -m pytest backend/tests -q
+```
+
+FastAPI 상태 확인 서버 실행:
+
+```bash
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
+
+브라우저에서 `http://127.0.0.1:8000/health`를 열면 DB 연결 상태를 확인할 수 있다. 물품·루틴·작업 CRUD API와 프론트엔드 연결은 아직 구현되지 않아 웹 화면은 계속 메모리 mock을 사용한다.
+
+### DB 종료와 안전한 초기화
+
+일상적인 종료는 데이터를 보존한다.
+
+```bash
+docker compose stop db
+```
+
+컨테이너만 다시 만들 때는 `docker compose down` 후 `docker compose up -d db`를 사용한다. 개발 DB를 완전히 초기화해야 할 때만 다음 명령을 사용한다. 이 명령은 Docker 볼륨과 모든 DB 데이터를 삭제한다.
+
+```bash
+docker compose down -v
+docker compose up -d db
+python -m alembic -c backend/alembic.ini upgrade head
+python -m backend.app.seed
+```
+
+실제 `.env`와 PostgreSQL 볼륨은 Git에 올라가지 않는다. `.env.example`, 모델, 마이그레이션과 시드 코드만 추적한다.
 
 ### 환경 확인
 
@@ -157,7 +263,7 @@ python -m pip list
 설치된 핵심 패키지를 확인하는 명령은 다음과 같다.
 
 ```bash
-python -c "import cv2, fastapi, numpy, serial, sqlalchemy; print('Python dependencies OK')"
+python -c "import cv2, fastapi, numpy, psycopg, serial, sqlalchemy; print('Python dependencies OK')"
 python -m pytest --version
 python -m ruff --version
 python -m mypy --version
@@ -218,7 +324,7 @@ npm run start
 - 메모리 기반 물품 관리와 작업 이력
 - UI 비상정지와 수동 초기화
 
-데이터는 새로고침하면 초기화된다. 실제 장치나 API를 제어하지 않는다.
+현재 웹 화면의 mock 데이터는 새로고침하면 초기화된다. PostgreSQL 데이터는 유지되지만 아직 화면과 연결되지 않았으며 실제 장치를 제어하지 않는다.
 
 ## 코드 구조
 
@@ -229,7 +335,9 @@ views/        기능별 화면
 store/        전역 상태와 실행 조정
 services/     도메인 서비스 계약과 mock 호출
 mocks/        초기 데이터와 시뮬레이션 엔진
+backend/      FastAPI, SQLAlchemy 모델, Alembic 마이그레이션과 DB 테스트
 scripts/      macOS/Linux·Windows 통합 환경 설정과 개발 실행
+compose.yaml  PostgreSQL 17 Docker Compose 설정
 types/        공통 TypeScript 모델
 docs/ko/      한국어 기술 문서
 docs/en/      영어 기술 문서

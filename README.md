@@ -6,7 +6,7 @@ CARE-PACK은 로봇을 이용해 외출 준비물을 가방에 적재하고 실�
 - [English guide and setup](README.en.md)
 - 배포된 데모: [care-pack-control.chaneepo500.chatgpt.site](https://care-pack-control.chaneepo500.chatgpt.site/)
 
-> 현재 저장소에는 제어센터 프론트엔드와 실행 시뮬레이션이 구현되어 있습니다. SO-ARM101, 카메라, 센서, 백엔드 API, 데이터베이스는 아직 실제 장비와 연결되지 않았습니다.
+> 현재 저장소에는 제어센터 프론트엔드, 실행 시뮬레이션, PostgreSQL 기반 백엔드 DB 토대가 있습니다. SO-ARM101, 카메라, 센서와 업무 API의 프론트엔드 연결은 아직 구현되지 않았습니다.
 
 ## 기술 문서
 
@@ -56,9 +56,43 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev.ps1
 
 설치 목록:
 
-- `requirements.txt`: 백엔드 실행 환경, DB 중립 ORM, 비전, 시리얼 통신 패키지
+- `requirements.txt`: 백엔드 실행 환경, PostgreSQL ORM·드라이버, 비전, 시리얼 통신 패키지
 - `requirements-dev.txt`: 실행 패키지 전체와 테스트·정적 검사 도구
 
-현재 특정 데이터베이스 서버와 Python DB 드라이버는 설치하지 않습니다. 실제 데이터베이스를 선택한 뒤 별도 설치 목록으로 추가합니다.
+## PostgreSQL 실행
+
+PostgreSQL 17은 Docker에서 실행하며 DB 데이터는 Docker 볼륨에 보존됩니다. 최초 1회 `.env.example`을 `.env`로 복사하고 개발용 비밀번호를 변경합니다.
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+docker compose up -d db
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d db
+```
+
+상태 확인은 `docker compose ps`, 종료는 `docker compose stop db`를 사용합니다. `docker compose down -v`는 DB 데이터까지 삭제하므로 초기화할 때만 실행합니다.
+
+DB 마이그레이션과 개발 시드:
+
+```bash
+python -m alembic -c backend/alembic.ini upgrade head
+python -m backend.app.seed
+```
+
+DB 테스트와 백엔드 상태 확인 서버:
+
+```bash
+python -m pytest backend/tests -q
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
+
+현재 구현 테이블은 `locations`, `items`, `routines`, `routine_items`, `jobs`, `job_items`, `job_events`입니다. FastAPI 업무 API와 프론트엔드 연동은 다음 단계입니다.
 
 자세한 공용 설치 방법은 [한국어 개발 환경 설정](README.ko.md#개발-환경-설정)을 참고하세요.

@@ -9,7 +9,7 @@ import { itemService } from '@/services/itemService';
 import { jobService } from '@/services/jobService';
 import { systemService } from '@/services/systemService';
 import { visionService } from '@/services/visionService';
-import type { ArmStatus, DetectionResult, EventLog, FailureTarget, Item, Job, PageKey, SystemStatus, TaskItem } from '@/types';
+import type { ArmStatus, DetectionResult, EventLog, FailureTarget, Item, Job, PageKey, SystemStatus } from '@/types';
 
 interface SystemContextValue {
   page: PageKey; setPage: (page: PageKey) => void;

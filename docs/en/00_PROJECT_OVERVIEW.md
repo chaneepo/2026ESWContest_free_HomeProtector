@@ -42,9 +42,9 @@ The current web application demonstrates this workflow in simulation. It is not 
 | Failure recovery | Simulated | One injected PICK or VERIFY failure on the first item, followed by recovery |
 | SO-ARM101 commands | Simulated | HOME, SAFE, gripper open/close, STOP |
 | Vision detections | Simulated | Random item, storage cell, and coordinates |
-| Items, jobs, and events | Temporary | Browser memory only; reset on reload |
-| Backend REST API | Planned | No HTTP backend is included |
-| SQLite database | Planned | No persistent storage is included |
+| UI items, jobs, and events | Temporary | Browser memory only; reset on reload |
+| FastAPI foundation | Partially implemented | `GET /health` and DB sessions exist; business REST APIs are planned |
+| PostgreSQL database | Foundation implemented | Docker, seven core tables, Alembic, seed data, and tests |
 | Real vision and calibration | Planned | OpenCV, AprilTag/ArUco, camera-to-robot transform |
 | Physical verification | Planned | ESP32 and bag weight sensor |
 | User, schedule, weather planning | Planned | Rule-based Planning Engine first |
@@ -55,4 +55,3 @@ The current web application demonstrates this workflow in simulation. It is not 
 This repository contains the current CARE-PACK control-center frontend, domain models, and simulation contracts. The intended evolution is to preserve the domain boundary while replacing mock services with backend and hardware adapters.
 
 See the [English README](../../README.en.md) for setup and [System Architecture](01_SYSTEM_ARCHITECTURE.md) for the complete boundary model.
-

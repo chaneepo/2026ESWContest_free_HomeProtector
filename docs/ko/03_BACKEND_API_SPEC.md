@@ -2,7 +2,7 @@
 
 ## 1. 상태와 범위
 
-현재 저장소에는 백엔드 HTTP 서버가 없으며 아래 API는 모두 **계획된 계약**이다. `services/*.ts`는 현재 메모리 mock을 사용한다. 실제 구현 시 `/api/v1` 버전 경로와 JSON을 권장하며, 장치 호출은 인증된 내부 서비스만 허용한다.
+현재 저장소에는 FastAPI 서버 기반, PostgreSQL 세션과 `GET /health`가 구현되어 있다. 아래 업무 API는 모두 **계획된 계약**이며 `services/*.ts`는 아직 메모리 mock을 사용한다. 실제 구현 시 `/api/v1` 버전 경로와 JSON을 사용하고 장치 호출은 인증된 내부 서비스만 허용한다.
 
 ## 2. 공통 규칙
 
@@ -28,6 +28,7 @@
 
 | 상태 | 메서드 | 경로 | 목적 |
 |---|---|---|---|
+| 구현 | GET | `/health` | FastAPI와 PostgreSQL 연결 상태 확인 |
 | 계획 | GET | `/api/v1/system/status` | 시스템·장치·현재 상태 조회 |
 | 계획 | POST | `/api/v1/system/emergency-stop` | 비상정지 요청 |
 | 계획 | POST | `/api/v1/system/reset` | 안전 확인 후 오류 상태 해제 |
@@ -175,4 +176,3 @@
 ## 9. 이벤트 API와 실시간 갱신
 
 `GET /events?jobId=job-001&level=ERROR&source=ARM&cursor=...`는 이벤트 배열과 다음 cursor를 반환한다. 실시간 전송은 향후 `/ws/system` WebSocket 또는 SSE로 설계할 수 있으나 현재 구현되지 않았다. 전송 페이로드는 [이벤트 로그 명세](09_EVENT_LOG_SPEC.md)의 표준 스키마를 재사용한다.
-

@@ -11,9 +11,9 @@
 - `message`
 - 선택적 `jobId`
 
-이벤트는 `services/eventService.ts`와 `SystemProvider`가 메모리에 추가한다. 표준 event code, item ID, metadata, 영구 저장은 아직 없다.
+프론트엔드 이벤트는 `services/eventService.ts`와 `SystemProvider`가 메모리에 추가한다. 백엔드에는 별도로 `job_events` 영구 테이블과 `event_type`, `job_item_id`, `step`, `device`, `severity`, `metadata_json` 모델이 구현되어 있지만 프론트엔드 서비스와 아직 연결되지 않았다.
 
-## 2. 목표 스키마
+## 2. 목표 API 페이로드
 
 ```json
 {
@@ -83,5 +83,4 @@
 
 ## 6. 조회와 보존
 
-기본 필터는 시간, 레벨, source, eventCode, jobId, itemId다. MVP는 SQLite 인덱스를 사용하고 CSV/JSON 내보내기를 제공할 수 있다. 보존 기간과 개인정보 삭제 정책은 운영 환경과 대회 시연 환경을 구분해 정의한다.
-
+기본 필터는 시간, 레벨, source, eventCode, jobId, itemId다. PostgreSQL의 `job_events` 테이블은 작업·작업 물품·이벤트 코드·생성 시각 인덱스를 제공한다. CSV/JSON 내보내기와 보존 기간, 개인정보 삭제 정책은 운영 환경과 대회 시연 환경을 구분해 추가한다.

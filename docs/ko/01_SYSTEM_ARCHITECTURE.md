@@ -42,13 +42,13 @@ flowchart TD
     EXEC --> VISION[Vision Adapter]
     EXEC --> SENSOR[ESP32 Sensor Adapter]
     EXEC --> RAZ[향후 Razbot Adapter]
-    API --> DB[(SQLite 또는 운영 DB)]
+    API --> DB[(PostgreSQL 17)]
     CORE --> EVENTS[Event Log]
     EVENTS --> DB
     EVENTS --> WEB
 ```
 
-목표 구조는 설계 방향이며 현재 구현된 서버 구조가 아니다.
+DB 계층과 FastAPI 상태 확인은 구현되었지만 업무 API, Core와 장치 어댑터 연결은 아직 목표 구조다.
 
 ## 4. 계층별 책임
 
@@ -77,4 +77,3 @@ flowchart TD
 ## 6. 안전 및 장애 격리
 
 비상정지는 진행 중인 실행을 취소하고 시스템을 `ERROR`로 전환한다. 실제 하드웨어 단계에서는 UI 버튼만으로 안전을 보장하지 않으며, 물리 E-stop, 통신 타임아웃, 속도·토크 제한, 안전 영역을 로봇 컨트롤러와 하드웨어 계층에서 강제해야 한다.
-

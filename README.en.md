@@ -2,7 +2,7 @@
 
 CARE-PACK plans items for an outing, uses a robot arm to move them into a bag, and verifies that loading physically succeeded. This repository currently contains the Korean control-center UI and a pre-hardware simulation.
 
-> Robot, vision, and sensor states shown in the UI are simulated. The physical SO-ARM101, camera, ESP32, backend, and database are not connected yet.
+> Robot, vision, and sensor states shown in the UI are simulated. PostgreSQL models, migrations, and seed data are implemented, but the physical SO-ARM101, camera, ESP32, and frontend integration with business APIs are not implemented yet.
 
 ## Development environment setup
 
@@ -13,6 +13,7 @@ The current web frontend runs on Node.js. The Python virtual environment isolate
 - Node.js 22.13 or newer (`.nvmrc`: `22.13.0`)
 - npm
 - Python 3.12.2 (`.python-version`: `3.12.2`)
+- Docker Desktop or Docker Engine with Docker Compose
 
 `nvm` and `pyenv` are optional. If installed, they can read the version files included in the project.
 
@@ -90,7 +91,7 @@ Node.js packages are installed in the project's `node_modules`, not in the Pytho
 
 | File | Purpose | Main packages |
 |---|---|---|
-| `requirements.txt` | Runtime environment | FastAPI, pydantic-settings, SQLAlchemy, NumPy, OpenCV contrib, pyserial |
+| `requirements.txt` | Runtime environment | FastAPI, pydantic-settings, SQLAlchemy, psycopg, NumPy, OpenCV contrib, pyserial |
 | `requirements-dev.txt` | Development and tests | All runtime packages plus pytest, pytest-asyncio, Ruff, and mypy |
 
 Most developers only need to install `requirements-dev.txt`. A device or deployment environment that needs runtime packages only can use:
@@ -101,7 +102,112 @@ python -m pip install -r requirements.txt
 
 OpenCV contrib is selected because it includes ArUco and AprilTag marker support. `pyserial` is the initial serial-transport dependency for SO-ARM101 or ESP32; add a robot-specific SDK only after the hardware interface is confirmed.
 
-SQLAlchemy remains the database-neutral layer. No SQLite, PostgreSQL, or other database driver is installed until the actual database is selected; add that driver through a separate requirements file later.
+SQLAlchemy provides the ORM layer and psycopg 3 connects it to PostgreSQL. Because `requirements-dev.txt` includes `requirements.txt`, normal development setup installs the PostgreSQL driver as well.
+
+### PostgreSQL with Docker
+
+PostgreSQL 17 runs as the `db` service in `compose.yaml`. Data is stored in the `postgres_data` Docker volume and survives container recreation. The host port binds only to `127.0.0.1` and is not exposed to the external network.
+
+For the first setup, copy the environment template to a local `.env`. This file contains each developer's password and is excluded from Git.
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Change the password in both `POSTGRES_PASSWORD` and `DATABASE_URL`, keeping the two values consistent, and then start the database.
+
+```bash
+docker compose up -d db
+docker compose ps
+```
+
+View logs or open a database shell with:
+
+```bash
+docker compose logs -f db
+docker compose exec db psql -U care_pack -d care_pack
+```
+
+Stop and restart it with:
+
+```bash
+docker compose stop db
+docker compose start db
+```
+
+Use `docker compose down` to remove only the container. `docker compose down -v` also deletes the `postgres_data` volume and every database record, so use it only for an intentional full reset.
+
+The FastAPI backend running on the host uses `localhost:5432` from `.env`. If the backend later becomes another Compose service, change the hostname from `localhost` to `db`.
+
+### Database migrations and seed data
+
+Create the current schema in an empty database or upgrade an existing development database:
+
+```bash
+python -m alembic -c backend/alembic.ini upgrade head
+```
+
+Inspect the current revision and verify model/migration consistency:
+
+```bash
+python -m alembic -c backend/alembic.ini current
+python -m alembic -c backend/alembic.ini check
+```
+
+Insert the explicit development and simulation seed of five locations, five items, two routines, and their assignments. The command is idempotent and is never run automatically at application startup.
+
+```bash
+python -m backend.app.seed
+```
+
+The seven implemented application tables are:
+
+```text
+locations, items, routines, routine_items, jobs, job_items, job_events
+```
+
+### Database tests and FastAPI health check
+
+Tests create a separate database whose name ends in `_test`, verify migration round trips, constraints, relationships, idempotent seeding, and execution-history protection, and then remove that test database. They never modify the normal development database.
+
+```bash
+python -m pytest backend/tests -q
+```
+
+Start the FastAPI health-check server with:
+
+```bash
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
+
+Open `http://127.0.0.1:8000/health` to verify database connectivity. Item, routine, and job CRUD APIs and frontend integration are not implemented yet, so the current UI continues to use in-memory mocks.
+
+### Stopping and safely resetting the database
+
+The normal stop command preserves all data:
+
+```bash
+docker compose stop db
+```
+
+Use `docker compose down` followed by `docker compose up -d db` to recreate only the container. Use the following full reset only when all development data may be deleted:
+
+```bash
+docker compose down -v
+docker compose up -d db
+python -m alembic -c backend/alembic.ini upgrade head
+python -m backend.app.seed
+```
+
+The real `.env` file and PostgreSQL volume are not tracked by Git. Only `.env.example`, models, migrations, and seed code are tracked.
 
 ### Verify the environment
 
@@ -157,7 +263,7 @@ Record only direct, validated team dependencies in the appropriate requirements 
 Verify the installed core packages with:
 
 ```bash
-python -c "import cv2, fastapi, numpy, serial, sqlalchemy; print('Python dependencies OK')"
+python -c "import cv2, fastapi, numpy, psycopg, serial, sqlalchemy; print('Python dependencies OK')"
 python -m pytest --version
 python -m ruff --version
 python -m mypy --version
@@ -218,7 +324,7 @@ Activating the Python environment does not change the current Node.js frontend b
 - In-memory item management and job history
 - UI emergency stop and manual reset
 
-All data resets on reload. No real devices or APIs are controlled.
+The current UI mock data resets on reload. PostgreSQL data persists but is not connected to the UI yet, and no real devices are controlled.
 
 ## Repository structure
 
@@ -229,7 +335,9 @@ views/        Feature views
 store/        Global state and orchestration
 services/     Domain service contracts and mock calls
 mocks/        Initial data and simulation engine
+backend/      FastAPI, SQLAlchemy models, Alembic migrations, and DB tests
 scripts/      Unified setup and development commands for macOS/Linux and Windows
+compose.yaml  PostgreSQL 17 Docker Compose configuration
 types/        Shared TypeScript models
 docs/ko/      Korean technical documentation
 docs/en/      English technical documentation

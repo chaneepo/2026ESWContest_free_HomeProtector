@@ -2,9 +2,9 @@
 
 ## 1. Current implementation
 
-The current `EventLog` type contains `id`, `timestamp`, `level`, `source`, `message`, and optional `jobId`. Levels are INFO, SUCCESS, WARNING, and ERROR; sources are SYSTEM, VISION, ARM, ESP32, and RAZBOT. Events live only in memory. There are no standardized event codes, item IDs, metadata, or persistence.
+The frontend `EventLog` type contains `id`, `timestamp`, `level`, `source`, `message`, and optional `jobId`; these events still live in memory. The backend now has a persistent `job_events` table with `event_type`, `job_item_id`, `step`, `device`, `severity`, and `metadata_json`, but frontend services are not connected to it yet.
 
-## 2. Target schema
+## 2. Target API payload
 
 ```json
 {
@@ -73,5 +73,4 @@ Keep high-frequency raw sensor samples in a measurement store; log the decision 
 
 ## 6. Query and retention
 
-Support filters for time, level, source, eventCode, jobId, and itemId. The SQLite MVP can index these fields and offer CSV/JSON export. Define separate retention rules for competition demos and operational deployments.
-
+Support filters for time, level, source, eventCode, jobId, and itemId. PostgreSQL `job_events` includes indexes for jobs, job items, event types, and creation time. Add CSV/JSON export and separate retention rules for competition demos and operational deployments later.

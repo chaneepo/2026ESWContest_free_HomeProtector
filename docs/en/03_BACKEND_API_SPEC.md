@@ -2,7 +2,7 @@
 
 ## 1. Status and scope
 
-This repository contains no backend HTTP server. Every endpoint below is a **planned contract**. Current `services/*.ts` modules call in-memory mocks. A real implementation should use a versioned `/api/v1` JSON API and restrict device commands to authenticated, authorized clients.
+The repository now includes a FastAPI server foundation, PostgreSQL sessions, and `GET /health`. Every business endpoint below remains a **planned contract**, and current `services/*.ts` modules still call in-memory mocks. Implement business routes under the versioned `/api/v1` JSON API and restrict device commands to authenticated, authorized clients.
 
 ## 2. Common conventions
 
@@ -28,6 +28,7 @@ Primary error statuses are `400` invalid input, `404` not found, `409` state con
 
 | Status | Method | Path | Purpose |
 |---|---|---|---|
+| Implemented | GET | `/health` | Verify FastAPI and PostgreSQL connectivity |
 | Planned | GET | `/api/v1/system/status` | System, device, and execution status |
 | Planned | POST | `/api/v1/system/emergency-stop` | Request emergency stop |
 | Planned | POST | `/api/v1/system/reset` | Clear error after safety checks |
@@ -171,4 +172,3 @@ Acceptance is not motion completion. Command and error details are defined in [S
 ## 9. Events and live updates
 
 `GET /events?jobId=job-001&level=ERROR&source=ARM&cursor=...` returns events and a next cursor. A future `/ws/system` WebSocket or SSE channel may reuse the [Event Log Specification](09_EVENT_LOG_SPEC.md), but neither transport is currently implemented.
-
