@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1514" />
+    <title>CHAN · Raspbot Controller</title>
+    <link rel="stylesheet" href="/web/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <p class="eyebrow">CARE-PACK MOBILITY</p>
+            <h1>CHAN <span>CONTROL</span></h1>
+          </div>
+        </div>
+        <div class="connection-pill" id="connection-pill">
+          <span class="status-dot"></span>
+          <span id="connection-text">연결 확인 중</span>
+        </div>
+      </header>
+
+      <nav class="mode-navigation" aria-label="CARE-PACK 제어 화면">
+        <button class="mode-tab active" data-view-target="raspbot">
+          <span class="tab-index">01</span><span>이동 로봇</span><small>RASPBOT V2</small>
+        </button>
+        <button class="mode-tab" data-view-target="arm">
+          <span class="tab-index">02</span><span>로봇팔</span><small>ROBOT UNIFIED</small>
+        </button>
+        <button class="mode-tab" data-view-target="mission">
+          <span class="tab-index">03</span><span>통합 미션</span><small>CARE-PACK FLOW</small>
+        </button>
+      </nav>
+
+      <section class="view-panel active" data-view="raspbot">
+        <section class="safety-banner" id="safety-banner">
+          <div class="shield-icon">S</div>
+          <div>
+            <strong id="mode-title">데모 모드</strong>
+            <p id="mode-description">버튼은 작동하지만 실제 모터에는 명령을 보내지 않습니다.</p>
+          </div>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="control-card panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">MANUAL DRIVE</p>
+              <h2>이동 컨트롤러</h2>
+            </div>
+            <span class="pulse-badge"><span id="pulse-value">0.2</span>초 펄스</span>
+          </div>
+
+          <div class="drive-layout">
+            <div class="d-pad" aria-label="Raspbot 이동 제어">
+              <button class="drive-button rotate" data-action="turn_left" aria-label="왼쪽 회전">
+                <span class="button-icon">↶</span><span>좌회전</span><kbd>A</kbd>
+              </button>
+              <button class="drive-button primary" data-action="forward" aria-label="앞으로">
+                <span class="button-icon">↑</span><span>전진</span><kbd>W</kbd>
+              </button>
+              <button class="drive-button rotate" data-action="turn_right" aria-label="오른쪽 회전">
+                <span class="button-icon">↷</span><span>우회전</span><kbd>D</kbd>
+              </button>
+
+              <button class="drive-button" data-action="strafe_left" aria-label="왼쪽 평행이동">
+                <span class="button-icon">←</span><span>좌 이동</span><kbd>Q</kbd>
+              </button>
+              <button class="stop-button" id="stop-button" aria-label="비상 정지">
+                <span class="stop-symbol"></span><span>STOP</span><kbd>SPACE</kbd>
+              </button>
+              <button class="drive-button" data-action="strafe_right" aria-label="오른쪽 평행이동">
+                <span class="button-icon">→</span><span>우 이동</span><kbd>E</kbd>
+              </button>
+
+              <span></span>
+              <button class="drive-button primary" data-action="backward" aria-label="뒤로">
+                <span class="button-icon">↓</span><span>후진</span><kbd>S</kbd>
+              </button>
+              <span></span>
+            </div>
+
+            <div class="settings-column">
+              <label class="slider-card" for="speed-slider">
+                <span class="setting-label">주행 속도</span>
+                <span class="setting-value"><b id="speed-value">40</b><small>/ 80</small></span>
+                <input id="speed-slider" type="range" min="20" max="80" value="40" step="5" />
+                <span class="range-labels"><span>천천히</span><span>빠르게</span></span>
+              </label>
+
+              <fieldset class="duration-card">
+                <legend>1회 이동 시간</legend>
+                <div class="segmented-control">
+                  <button data-duration="0.1">0.1초</button>
+                  <button data-duration="0.2" class="active">0.2초</button>
+                  <button data-duration="0.3">0.3초</button>
+                </div>
+              </fieldset>
+
+              <label class="angle-card" for="turn-angle">
+                <span class="setting-label">좌·우회전 예상 각도</span>
+                <span class="angle-input-wrap">
+                  <input id="turn-angle" type="number" min="1" max="180" step="1" value="45" inputmode="decimal" />
+                  <b>°</b>
+                </span>
+                <small>1~180° 직접 입력 · 실제 바닥에서 보정 필요</small>
+              </label>
+
+              <div class="last-command-card">
+                <span class="setting-label">마지막 명령</span>
+                <strong id="last-command">정지</strong>
+                <small id="command-count">총 0회</small>
+              </div>
+            </div>
+          </div>
+          </article>
+
+          <aside class="telemetry-column">
+          <article class="panel sensor-panel">
+            <div class="section-heading compact">
+              <div>
+                <p class="eyebrow">LIVE TELEMETRY</p>
+                <h2>센서 상태</h2>
+              </div>
+              <button class="icon-button" id="refresh-sensors" aria-label="센서 새로고침">↻</button>
+            </div>
+
+            <div class="distance-readout">
+              <div class="radar" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div>
+                <span>전방 거리</span>
+                <strong><b id="distance-value">--</b> cm</strong>
+              </div>
+            </div>
+
+            <div class="line-sensor">
+              <div class="sensor-title"><span>라인 센서</span><small>왼쪽 → 오른쪽</small></div>
+              <div class="sensor-array" id="sensor-array">
+                <span data-sensor="0">1</span><span data-sensor="1">2</span>
+                <span data-sensor="2">3</span><span data-sensor="3">4</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel activity-panel">
+            <p class="eyebrow">SYSTEM LOG</p>
+            <div class="activity-line">
+              <span class="activity-icon">✓</span>
+              <div><strong id="activity-title">컨트롤러 준비</strong><small id="activity-time">방금 전</small></div>
+            </div>
+            <p class="activity-message" id="activity-message">명령을 기다리고 있습니다.</p>
+          </article>
+          </aside>
+        </section>
+      </section>
+
+      <section class="view-panel" data-view="arm" hidden>
+        <div class="future-grid">
+          <article class="panel future-hero">
+            <div class="future-orbit" aria-hidden="true"><span>J1</span><span>J3</span><span>J6</span></div>
+            <div>
+              <p class="eyebrow">ROBOT UNIFIED V2</p>
+              <h2>로봇팔 컨트롤러 영역</h2>
+              <p>기존 ROS2 · Klipper · YOLO 제어 시스템을 이 화면에 연결할 예정입니다.</p>
+              <div class="endpoint-tags">
+                <span>/status</span><span>/move/axis</span><span>/move/pose</span><span>/mjpeg</span>
+              </div>
+            </div>
+          </article>
+          <article class="panel integration-card">
+            <p class="eyebrow">INTEGRATION CHECKLIST</p>
+            <ul>
+              <li><span>1</span><div><strong>상태·관절값 표시</strong><small>읽기 전용 연결부터 시작</small></div></li>
+              <li><span>2</span><div><strong>카메라·YOLO 화면</strong><small>기존 MJPEG 스트림 재사용</small></div></li>
+              <li><span>3</span><div><strong>축·Pose 조작</strong><small>속도 제한과 비상정지 추가 후 활성화</small></div></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="view-panel" data-view="mission" hidden>
+        <article class="panel mission-panel">
+          <div>
+            <p class="eyebrow">CARE-PACK ORCHESTRATION</p>
+            <h2>포장부터 배송까지 하나의 흐름</h2>
+            <p>로봇팔의 약품 적재 완료 신호를 받은 뒤 Raspbot이 목적지로 이동하고, 전달 확인 후 복귀하는 통합 미션 화면입니다.</p>
+          </div>
+          <div class="mission-flow" aria-label="통합 미션 흐름">
+            <div class="flow-step"><b>01</b><span>약품 인식</span><small>YOLO</small></div>
+            <i>→</i>
+            <div class="flow-step"><b>02</b><span>포장·적재</span><small>ROBOT ARM</small></div>
+            <i>→</i>
+            <div class="flow-step"><b>03</b><span>실내 배송</span><small>RASPBOT</small></div>
+            <i>→</i>
+            <div class="flow-step"><b>04</b><span>전달·복귀</span><small>CONFIRM</small></div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <span>CHAN CONTROLLER v1.0</span>
+        <span>WASD 이동 · QE 평행이동 · SPACE 정지</span>
+      </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="/web/app.js" defer></script>
+  </body>
+</html>
