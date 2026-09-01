@@ -37,8 +37,17 @@ MacBook/Phone Browser ── http://192.168.0.74:8090 ── 통합 UI
 
 ## 통합 계획
 
-현재 UI의 API는 `/api/raspbot/status`, `/api/raspbot/move`,
+현재 UI의 API는 `/api/status`, `/api/raspbot/move`, `/api/raspbot/turn`,
 `/api/raspbot/stop`, `/api/raspbot/sensors`로 구분했습니다.
+
+서버 실행 모드는 다음 세 단계로 분리합니다.
+
+- 데모 모드: 하드웨어 없이 UI와 API 확인
+- `--sensors-only`: 실제 센서를 읽되 이동 명령 차단
+- `--hardware`: 최초 모터 시험 후 실제 이동 명령 허용
+
+좌우회전 각도는 엔코더가 없는 차체 특성상 시간 기반 예상값입니다. 현재 기본
+환산값은 속도 40에서 90°당 1초이며 실제 바닥에서 보정합니다.
 
 로봇팔은 기존 `RobotUnified_v2`의 다음 API를 재사용할 수 있습니다.
 
