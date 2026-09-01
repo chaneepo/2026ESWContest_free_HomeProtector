@@ -10,6 +10,30 @@ CARE-PACK 이동 로봇을 개발하기 위한 별도 작업공간입니다.
 - Raspbot 제어보드 주소: `0x2B`
 - 기존 로봇팔 프로젝트: `/home/tracelab/RobotUnified_v2`
 
+## 비전 데이터셋·SAM2 빠른 시작
+
+U20CAM 촬영부터 영상 검사, 프레임 추출, SAM2 마스킹까지의 전체 과정은
+[VISION_QUICKSTART.md](VISION_QUICKSTART.md)를 먼저 확인합니다.
+
+- [MEDIA_VIEWER.md](MEDIA_VIEWER.md): 사진·영상·실시간 카메라 뷰어
+- [SAM2_TEST.md](SAM2_TEST.md): SAM2 Tiny 포인트·박스 마스킹
+
+촬영 결과와 실시간 카메라를 확인하려면:
+
+```bash
+cd /home/tracelab/chan
+python3 media_viewer.py
+python3 media_viewer.py --camera 0
+```
+
+SAM2 테스트 예시:
+
+```bash
+/home/tracelab/RobotUnified_v2/.venv/bin/python sam2_mask.py \
+  /home/tracelab/carepack-dataset/sam_test/lip_balm_frame.jpg \
+  --point 560 470
+```
+
 ## 1. 접속 후 환경 활성화
 
 ```bash
