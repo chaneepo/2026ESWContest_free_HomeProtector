@@ -4,6 +4,7 @@ const state = {
   turnAngle: 45,
   busy: false,
   movementEnabled: false,
+  keyboardEnabled: true,
 };
 
 const labels = {
@@ -17,6 +18,10 @@ const labels = {
 };
 
 const keyMap = {
+  ArrowUp: "forward",
+  ArrowDown: "backward",
+  ArrowLeft: "turn_left",
+  ArrowRight: "turn_right",
   KeyW: "forward",
   KeyS: "backward",
   KeyA: "turn_left",
@@ -56,6 +61,16 @@ function setActivity(title, message) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function renderKeyboardSetting() {
+  const toggle = $("#keyboard-toggle");
+  toggle.setAttribute("aria-pressed", String(state.keyboardEnabled));
+  toggle.classList.toggle("active", state.keyboardEnabled);
+  $("#keyboard-state").textContent = state.keyboardEnabled ? "ON" : "OFF";
+  $("#keyboard-toggle-label").textContent = state.keyboardEnabled
+    ? "키보드 리모컨 켜짐"
+    : "키보드 리모컨 꺼짐";
 }
 
 function renderStatus(status) {
@@ -204,6 +219,15 @@ function bindControls() {
   });
   $("#stop-button").addEventListener("click", stop);
   $("#refresh-sensors").addEventListener("click", fetchSensors);
+  $("#keyboard-toggle").addEventListener("click", () => {
+    state.keyboardEnabled = !state.keyboardEnabled;
+    renderKeyboardSetting();
+    showToast(
+      state.keyboardEnabled
+        ? "키보드 리모컨을 켰습니다."
+        : "키보드 리모컨을 껐습니다. 화면 버튼은 계속 사용할 수 있습니다.",
+    );
+  });
 
   const slider = $("#speed-slider");
   slider.addEventListener("input", () => {
@@ -232,7 +256,10 @@ function bindControls() {
   });
 
   window.addEventListener("keydown", (event) => {
-    if (event.repeat || event.target.matches("input, button")) return;
+    const isTyping = event.target.matches(
+      'input, textarea, select, [contenteditable="true"]',
+    );
+    if (event.repeat || isTyping) return;
     if (event.code === "Space") {
       event.preventDefault();
       stop();
@@ -241,6 +268,10 @@ function bindControls() {
     const action = keyMap[event.code];
     if (!action) return;
     event.preventDefault();
+    if (!state.keyboardEnabled) {
+      showToast("키보드 리모컨이 꺼져 있습니다.", true);
+      return;
+    }
     const button = $(`[data-action="${action}"]`);
     if (action === "turn_left" || action === "turn_right") {
       turn(action, button);
@@ -251,6 +282,7 @@ function bindControls() {
 }
 
 bindControls();
+renderKeyboardSetting();
 fetchStatus();
 fetchSensors();
 setInterval(fetchStatus, 3000);

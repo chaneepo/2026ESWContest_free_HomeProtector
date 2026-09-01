@@ -233,7 +233,7 @@ kbd {
 .stop-symbol { width: 25px; height: 25px; border-radius: 7px; background: var(--danger); box-shadow: 0 0 18px rgba(255, 92, 92, 0.35); }
 
 .settings-column { display: grid; align-content: start; gap: 12px; }
-.slider-card, .duration-card, .angle-card, .last-command-card {
+.slider-card, .duration-card, .angle-card, .remote-setting-card, .last-command-card {
   margin: 0;
   padding: 17px;
   border: 1px solid var(--line);
@@ -281,6 +281,29 @@ input[type="range"] { width: 100%; accent-color: var(--mint); cursor: pointer; }
 .angle-input-wrap input:focus { border-color: var(--mint); }
 .angle-input-wrap b { color: var(--mint); font: 600 19px "DM Mono", monospace; }
 .angle-card small { color: #60736e; font-size: 9px; }
+.remote-setting-heading { display: flex; align-items: center; justify-content: space-between; }
+.remote-setting-heading strong { color: var(--mint); font: 700 12px "DM Mono", monospace; }
+.remote-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  font-size: 10px;
+}
+.remote-toggle.active { color: #062219; border-color: var(--mint); background: var(--mint); font-weight: 700; }
+.remote-dot { width: 7px; height: 7px; border-radius: 50%; background: #60736e; }
+.remote-toggle.active .remote-dot { background: #062219; box-shadow: 0 0 0 3px rgba(6, 34, 25, 0.12); }
+.remote-key-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 8px; }
+.remote-key-grid span { color: var(--muted); font-size: 9px; }
+.remote-key-grid kbd { display: inline-grid; min-width: 22px; place-items: center; margin-right: 3px; }
+.remote-setting-card small { color: #60736e; font-size: 9px; line-height: 1.5; }
 .drive-button:disabled { cursor: not-allowed; filter: grayscale(0.5); opacity: 0.46; transform: none; }
 .last-command-card strong { display: block; margin: 8px 0 2px; color: var(--mint); font-size: 17px; }
 .last-command-card small { color: #60736e; font: 10px "DM Mono", monospace; }

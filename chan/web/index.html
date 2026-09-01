@@ -59,13 +59,13 @@
           <div class="drive-layout">
             <div class="d-pad" aria-label="Raspbot 이동 제어">
               <button class="drive-button rotate" data-action="turn_left" aria-label="왼쪽 회전">
-                <span class="button-icon">↶</span><span>좌회전</span><kbd>A</kbd>
+                <span class="button-icon">↶</span><span>좌회전</span><kbd>← / A</kbd>
               </button>
               <button class="drive-button primary" data-action="forward" aria-label="앞으로">
-                <span class="button-icon">↑</span><span>전진</span><kbd>W</kbd>
+                <span class="button-icon">↑</span><span>전진</span><kbd>↑ / W</kbd>
               </button>
               <button class="drive-button rotate" data-action="turn_right" aria-label="오른쪽 회전">
-                <span class="button-icon">↷</span><span>우회전</span><kbd>D</kbd>
+                <span class="button-icon">↷</span><span>우회전</span><kbd>→ / D</kbd>
               </button>
 
               <button class="drive-button" data-action="strafe_left" aria-label="왼쪽 평행이동">
@@ -80,7 +80,7 @@
 
               <span></span>
               <button class="drive-button primary" data-action="backward" aria-label="뒤로">
-                <span class="button-icon">↓</span><span>후진</span><kbd>S</kbd>
+                <span class="button-icon">↓</span><span>후진</span><kbd>↓ / S</kbd>
               </button>
               <span></span>
             </div>
@@ -110,6 +110,29 @@
                 </span>
                 <small>1~180° 직접 입력 · 실제 바닥에서 보정 필요</small>
               </label>
+
+              <div class="remote-setting-card">
+                <div class="remote-setting-heading">
+                  <span class="setting-label">REMOTE SETTING</span>
+                  <strong id="keyboard-state" aria-live="polite">ON</strong>
+                </div>
+                <button
+                  type="button"
+                  class="remote-toggle active"
+                  id="keyboard-toggle"
+                  aria-pressed="true"
+                >
+                  <span class="remote-dot" aria-hidden="true"></span>
+                  <span id="keyboard-toggle-label">키보드 리모컨 켜짐</span>
+                </button>
+                <div class="remote-key-grid" aria-label="키보드 리모컨 단축키">
+                  <span><kbd>↑</kbd> 전진</span>
+                  <span><kbd>↓</kbd> 후진</span>
+                  <span><kbd>←</kbd> 좌회전</span>
+                  <span><kbd>→</kbd> 우회전</span>
+                </div>
+                <small>화면 버튼과 STOP은 항상 사용할 수 있습니다.</small>
+              </div>
 
               <div class="last-command-card">
                 <span class="setting-label">마지막 명령</span>
@@ -204,7 +227,7 @@
 
       <footer>
         <span>CHAN CONTROLLER v1.0</span>
-        <span>WASD 이동 · QE 평행이동 · SPACE 정지</span>
+        <span>방향키·WASD 운전 · QE 평행이동 · SPACE 정지</span>
       </footer>
     </main>
 
