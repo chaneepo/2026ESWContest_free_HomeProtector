@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+import socket
 import threading
 import time
 from dataclasses import asdict, dataclass
@@ -23,6 +24,21 @@ except ModuleNotFoundError:  # Demo mode also runs on the Mac without the driver
 from chan_control import Motion, RaspbotController, SafetyLimits
 
 WEB_ROOT = Path(__file__).resolve().parent / "web"
+
+
+class IPv6ThreadingHTTPServer(ThreadingHTTPServer):
+    """Serve IPv6 and, where supported, IPv4-mapped clients on one socket."""
+
+    address_family = socket.AF_INET6
+
+    def server_bind(self) -> None:
+        if hasattr(socket, "IPV6_V6ONLY"):
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
+
+
+def server_class_for(host: str) -> type[ThreadingHTTPServer]:
+    return IPv6ThreadingHTTPServer if ":" in host else ThreadingHTTPServer
 
 
 @dataclass
@@ -79,6 +95,53 @@ class ControllerRuntime:
             self._controller.connect()
             self.state.connected = True
         return self._controller
+
+    def set_mode(self, mode: str, *, confirm_safe: bool = False) -> dict[str, Any]:
+        """Switch between movement-locked sensing and real motor control safely."""
+        normalized = str(mode).strip().lower()
+        aliases = {"safe": "sensors", "sensors": "sensors", "hardware": "hardware"}
+        if normalized not in aliases:
+            raise ValueError("mode must be safe, sensors, or hardware")
+        target = aliases[normalized]
+        if target == "hardware" and confirm_safe is not True:
+            raise PermissionError("실기모드 전환 전 주변 안전 확인이 필요합니다")
+
+        with self._lock:
+            previous = (
+                self.hardware,
+                self.sensors_only,
+                self.sensor_hardware,
+                self.state.mode,
+            )
+            try:
+                # Hardware mode must prove the I2C controller is reachable before
+                # unlocking movement. Safe mode only needs to stop a controller
+                # that is already connected -- it must not require hardware to
+                # exist just to lock movement back down.
+                if target == "hardware":
+                    controller = self._ensure_controller()
+                    controller.stop()
+                elif self._controller is not None:
+                    self._controller.stop()
+                self.hardware = target == "hardware"
+                self.sensors_only = target == "sensors"
+                self.sensor_hardware = True
+                self.state.mode = target
+                self.state.last_action = "stop"
+                self.state.last_speed = 0
+                self.state.last_duration = 0.0
+                self.state.last_angle = None
+                self.state.last_error = None
+            except Exception as exc:
+                (
+                    self.hardware,
+                    self.sensors_only,
+                    self.sensor_hardware,
+                    self.state.mode,
+                ) = previous
+                self.state.last_error = str(exc)
+                raise
+        return self.snapshot()
 
     def move(self, action: str, speed: int, duration: float) -> dict[str, Any]:
         if self.sensors_only:
@@ -277,6 +340,12 @@ def build_handler(runtime: ControllerRuntime) -> type[BaseHTTPRequestHandler]:
                         float(payload.get("angle", 45)),
                         int(payload.get("speed", 40)),
                     )
+                elif path == "/api/raspbot/mode":
+                    payload = self._read_json()
+                    result = runtime.set_mode(
+                        str(payload.get("mode", "")),
+                        confirm_safe=payload.get("confirm_safe") is True,
+                    )
                 elif path in ("/api/stop", "/api/raspbot/stop"):
                     result = runtime.stop()
                 else:
@@ -321,9 +390,11 @@ def main() -> int:
         hardware=args.hardware,
         sensors_only=args.sensors_only,
     )
-    server = ThreadingHTTPServer((args.host, args.port), build_handler(runtime))
+    server_class = server_class_for(args.host)
+    server = server_class((args.host, args.port), build_handler(runtime))
     mode = "HARDWARE" if args.hardware else "SENSORS-ONLY" if args.sensors_only else "DEMO"
-    print(f"CHAN controller: http://{args.host}:{args.port} ({mode})")
+    display_host = f"[{args.host}]" if ":" in args.host else args.host
+    print(f"CHAN controller: http://{display_host}:{args.port} ({mode})")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

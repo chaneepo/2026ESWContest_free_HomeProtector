@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 import unittest
+from http.server import ThreadingHTTPServer
 
-from server import ControllerRuntime
+from server import ControllerRuntime, IPv6ThreadingHTTPServer, server_class_for
 
 
 class ControllerRuntimeTests(unittest.TestCase):
+    class FakeController:
+        def __init__(self) -> None:
+            self.stop_calls = 0
+
+        def stop(self) -> None:
+            self.stop_calls += 1
+
     def test_demo_move_records_command_without_hardware(self) -> None:
         runtime = ControllerRuntime(hardware=False)
 
@@ -57,6 +65,33 @@ class ControllerRuntimeTests(unittest.TestCase):
             runtime.turn("right", 0, 40)
         with self.assertRaises(ValueError):
             runtime.turn("right", 181, 40)
+
+    def test_ipv6_host_selects_ipv6_server(self) -> None:
+        self.assertIs(server_class_for("::"), IPv6ThreadingHTTPServer)
+        self.assertIs(server_class_for("2001:db8::1"), IPv6ThreadingHTTPServer)
+        self.assertIs(server_class_for("0.0.0.0"), ThreadingHTTPServer)
+
+    def test_hardware_mode_requires_explicit_safety_confirmation(self) -> None:
+        runtime = ControllerRuntime(sensors_only=True)
+        runtime._controller = self.FakeController()  # type: ignore[assignment]
+
+        with self.assertRaises(PermissionError):
+            runtime.set_mode("hardware")
+
+        self.assertFalse(runtime.snapshot()["movement_enabled"])
+
+    def test_mode_switch_stops_before_changing_movement_permission(self) -> None:
+        runtime = ControllerRuntime()
+        controller = self.FakeController()
+        runtime._controller = controller  # type: ignore[assignment]
+
+        hardware = runtime.set_mode("hardware", confirm_safe=True)
+        safe = runtime.set_mode("safe")
+
+        self.assertTrue(hardware["movement_enabled"])
+        self.assertFalse(safe["movement_enabled"])
+        self.assertEqual(safe["mode"], "sensors")
+        self.assertEqual(controller.stop_calls, 2)
 
 
 if __name__ == "__main__":

@@ -128,6 +128,18 @@ python3 server.py --host 0.0.0.0 --port 8090
 http://192.168.0.74:8090
 ```
 
+IPv4가 바뀌고 IPv6만 연결되는 네트워크에서는 다음처럼 실행합니다.
+
+```bash
+python3 -u server.py --host :: --port 8090 --sensors-only
+```
+
+브라우저 주소는 IPv6 주소를 대괄호로 감싸서 입력합니다.
+
+```text
+http://[라즈베리파이-IPv6-주소]:8090
+```
+
 차체 연결과 `python3 check_setup.py --probe` 확인을 마친 후에만 실제 제어 모드를
 실행합니다.
 

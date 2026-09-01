@@ -40,9 +40,23 @@
       <section class="view-panel active" data-view="raspbot">
         <section class="safety-banner" id="safety-banner">
           <div class="shield-icon">S</div>
-          <div>
+          <div class="mode-copy">
             <strong id="mode-title">데모 모드</strong>
             <p id="mode-description">버튼은 작동하지만 실제 모터에는 명령을 보내지 않습니다.</p>
+          </div>
+          <div class="mode-switcher" aria-label="Raspbot 운전 모드 전환">
+            <label class="hardware-safety-check">
+              <input id="hardware-safety-check" type="checkbox" />
+              <span>주변에 사람·케이블 없음</span>
+            </label>
+            <div class="mode-switch-buttons">
+              <button type="button" class="controller-mode-button" id="safe-mode-button">
+                안전모드
+              </button>
+              <button type="button" class="controller-mode-button hardware-button" id="hardware-mode-button" disabled>
+                실기모드
+              </button>
+            </div>
           </div>
         </section>
 

@@ -53,6 +53,17 @@ python3 -u server.py --host 0.0.0.0 --port 8090 --sensors-only
 
 Mac 브라우저에서 `http://192.168.0.74:8090`을 엽니다.
 
+IPv6로만 연결되는 경우 서버의 `--host`를 `::`로 지정하고, 브라우저에서는
+IPv6 주소를 대괄호로 감쌉니다.
+
+```bash
+python3 -u server.py --host :: --port 8090 --sensors-only
+```
+
+```text
+http://[라즈베리파이-IPv6-주소]:8090
+```
+
 ## 최초 모터 시험
 
 다음 조건을 모두 만족한 상태에서만 실행합니다.

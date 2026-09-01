@@ -7,7 +7,7 @@ export function DashboardPage() {
   const { status, currentJob, events, setPage } = useSystem();
   const devices = [
     { name: 'SO-ARM101', detail: '로봇팔 제어기', status: status.armStatus, glyph: 'AR' },
-    { name: '비전 카메라', detail: 'AprilTag 인식', status: status.visionStatus, glyph: 'VS' },
+    { name: '비전 카메라', detail: 'YOLO11n 실시간 인식', status: status.visionStatus, glyph: 'VS' },
     { name: 'ESP32', detail: '센서 및 액추에이터', status: status.esp32Status, glyph: 'IO' },
     { name: 'Razbot', detail: '이동형 로봇', status: status.razbotStatus, glyph: 'RB' },
   ];

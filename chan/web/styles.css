@@ -110,6 +110,49 @@ h2 { margin-bottom: 0; font-size: 20px; letter-spacing: -0.02em; }
   border-radius: 14px;
   background: linear-gradient(100deg, rgba(33, 78, 81, 0.38), rgba(17, 37, 36, 0.45));
 }
+.mode-copy { min-width: 200px; }
+.mode-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+.hardware-safety-check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.hardware-safety-check input { accent-color: var(--mint); }
+.mode-switch-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 6px;
+}
+.controller-mode-button {
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+.controller-mode-button.active {
+  color: #062219;
+  border-color: var(--mint);
+  background: var(--mint);
+}
+.controller-mode-button.hardware-button.active {
+  color: #2d1800;
+  border-color: #ffb152;
+  background: #ffb152;
+}
+.controller-mode-button:disabled { cursor: not-allowed; opacity: 0.42; }
 
 .mode-navigation {
   display: grid;
@@ -411,6 +454,8 @@ footer { justify-content: space-between; padding: 18px 3px 0; color: #4f625d; fo
 .toast.error { border-color: rgba(255, 92, 92, 0.45); color: #ff9c9c; }
 
 @media (max-width: 880px) {
+  .safety-banner { align-items: flex-start; flex-wrap: wrap; }
+  .mode-switcher { width: 100%; margin-left: 46px; justify-content: space-between; }
   .dashboard-grid { grid-template-columns: 1fr; }
   .drive-layout { grid-template-columns: 1fr; }
   .settings-column { grid-template-columns: repeat(3, 1fr); }
@@ -424,6 +469,8 @@ footer { justify-content: space-between; padding: 18px 3px 0; color: #4f625d; fo
   .topbar { align-items: flex-start; }
   h1 { font-size: 18px; }
   .connection-pill { padding: 8px 10px; }
+  .mode-switcher { align-items: stretch; flex-direction: column; margin-left: 0; }
+  .mode-switch-buttons { grid-template-columns: repeat(2, 1fr); }
   .control-card, .sensor-panel, .activity-panel { padding: 17px; }
   .drive-layout { gap: 17px; }
   .d-pad { grid-template-columns: repeat(3, 1fr); gap: 7px; }

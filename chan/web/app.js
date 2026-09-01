@@ -5,6 +5,8 @@ const state = {
   busy: false,
   movementEnabled: false,
   keyboardEnabled: true,
+  mode: "demo",
+  modeSwitchBusy: false,
 };
 
 const labels = {
@@ -73,9 +75,25 @@ function renderKeyboardSetting() {
     : "키보드 리모컨 꺼짐";
 }
 
+function renderModeControls() {
+  const safetyChecked = $("#hardware-safety-check").checked;
+  const safeButton = $("#safe-mode-button");
+  const hardwareButton = $("#hardware-mode-button");
+  const safeActive = state.mode === "sensors";
+  const hardwareActive = state.mode === "hardware";
+
+  safeButton.classList.toggle("active", safeActive);
+  hardwareButton.classList.toggle("active", hardwareActive);
+  safeButton.setAttribute("aria-pressed", String(safeActive));
+  hardwareButton.setAttribute("aria-pressed", String(hardwareActive));
+  safeButton.disabled = state.modeSwitchBusy || safeActive;
+  hardwareButton.disabled = state.modeSwitchBusy || hardwareActive || !safetyChecked;
+}
+
 function renderStatus(status) {
   const online = $("#connection-pill");
   online.classList.add("online");
+  state.mode = status.mode || "demo";
   state.movementEnabled = Boolean(status.movement_enabled);
   $("#connection-text").textContent = status.movement_enabled
     ? "Raspbot 실기 모드"
@@ -96,11 +114,55 @@ function renderStatus(status) {
     $("#safety-banner").classList.remove("hardware");
     $("#mode-title").textContent = "센서 점검 모드 · 이동 잠금";
     $("#mode-description").textContent = "실제 센서를 읽고 있지만 모든 바퀴 이동 명령은 차단되어 있습니다.";
+  } else {
+    $("#safety-banner").classList.remove("hardware");
+    $("#mode-title").textContent = "데모 모드";
+    $("#mode-description").textContent = "서버만 실행 중이며 실제 Raspbot 연결은 사용하지 않습니다.";
   }
+
+  renderModeControls();
 
   $$(".drive-button[data-action]").forEach((button) => {
     button.disabled = !state.movementEnabled;
   });
+}
+
+async function setControllerMode(mode) {
+  if (state.modeSwitchBusy) return;
+  const hardwareRequested = mode === "hardware";
+  const safetyCheck = $("#hardware-safety-check");
+  if (hardwareRequested && !safetyCheck.checked) {
+    showToast("주변 안전 확인을 먼저 체크하세요.", true);
+    return;
+  }
+
+  state.modeSwitchBusy = true;
+  renderModeControls();
+  setActivity(
+    hardwareRequested ? "실기모드 전환 중" : "안전모드 전환 중",
+    "먼저 모든 바퀴에 정지 명령을 보내고 연결을 확인합니다.",
+  );
+  try {
+    const result = await request("/api/raspbot/mode", {
+      method: "POST",
+      body: JSON.stringify({ mode, confirm_safe: hardwareRequested }),
+    });
+    renderStatus(result);
+    if (hardwareRequested) {
+      safetyCheck.checked = false;
+      showToast("실기모드로 전환했습니다. 짧게 시험 운전하세요.");
+      setActivity("실기모드", "화면 버튼과 키보드로 실제 바퀴를 제어할 수 있습니다.");
+    } else {
+      showToast("안전모드로 전환하고 모터를 정지했습니다.");
+      setActivity("안전모드", "센서만 사용하며 모든 이동 명령은 잠겨 있습니다.");
+    }
+  } catch (error) {
+    showToast(`모드 전환 실패: ${error.message}`, true);
+    setActivity("모드 전환 실패", error.message);
+  } finally {
+    state.modeSwitchBusy = false;
+    renderModeControls();
+  }
 }
 
 async function fetchStatus() {
@@ -228,6 +290,9 @@ function bindControls() {
         : "키보드 리모컨을 껐습니다. 화면 버튼은 계속 사용할 수 있습니다.",
     );
   });
+  $("#hardware-safety-check").addEventListener("change", renderModeControls);
+  $("#safe-mode-button").addEventListener("click", () => setControllerMode("safe"));
+  $("#hardware-mode-button").addEventListener("click", () => setControllerMode("hardware"));
 
   const slider = $("#speed-slider");
   slider.addEventListener("input", () => {
@@ -283,6 +348,7 @@ function bindControls() {
 
 bindControls();
 renderKeyboardSetting();
+renderModeControls();
 fetchStatus();
 fetchSensors();
 setInterval(fetchStatus, 3000);
