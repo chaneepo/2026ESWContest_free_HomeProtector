@@ -21,6 +21,12 @@
 .DS_Store
 *.pem
 
+# local build cache and editor temporary files
+*.tsbuildinfo
+*.swp
+*.swo
+*~
+
 # debug
 npm-debug.log*
 yarn-debug.log*

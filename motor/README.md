@@ -15,7 +15,6 @@ SO-ARM101 팔 제어와 ESP32 모터의 이동·털기 시퀀스를 제공하는
 | [motor_control.py](motor_control.py) | [ESP32 모터·털기 도구](#esp32-모터털기-도구) | Tkinter 화면에서 이동·털기 각도·횟수·간격 전송 |
 | [esp32_motor_controller_with_interval.ino](esp32_motor_controller_with_interval.ino) | [ESP32 모터·털기 도구](#esp32-모터털기-도구) | ESP32의 이동·털기·복귀 시퀀스 |
 | [tests/](tests/) | [테스트 README](tests/README.md) | 팔 로직의 fake-bus 테스트 |
-| [s101](s101) | — | 현재 `#s101` 내용만 있는 메모 파일; 실행 진입점 아님 |
 
 ## 실행 준비
 
