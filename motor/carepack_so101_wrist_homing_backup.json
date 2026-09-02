@@ -1,0 +1,13 @@
+{
+  "format": "carepack-so101-wrist-homing-v1",
+  "status": "applied",
+  "motor_name": "wrist_roll",
+  "original_homing_offset": 0,
+  "position_before": 1838,
+  "new_homing_offset": -208,
+  "position_after": 2047,
+  "continuous_range": [
+    0,
+    4095
+  ]
+}

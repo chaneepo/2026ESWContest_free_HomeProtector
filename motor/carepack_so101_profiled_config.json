@@ -1,0 +1,140 @@
+{
+  "port": "COM3",
+  "monitor_hz": 4.0,
+  "default_profile": "gentle",
+  "profiles": {
+    "gentle": {"label": "부드럽게", "arm_speed": 120, "arm_acceleration": 2, "gripper_speed": 70, "gripper_acceleration": 1},
+    "normal": {"label": "보통", "arm_speed": 220, "arm_acceleration": 4, "gripper_speed": 100, "gripper_acceleration": 2},
+    "quick": {"label": "빠르게", "arm_speed": 350, "arm_acceleration": 7, "gripper_speed": 140, "gripper_acceleration": 3}
+  },
+  "profile_limits": {
+    "arm_speed": [50, 600],
+    "arm_acceleration": [1, 20],
+    "gripper_speed": [30, 250],
+    "gripper_acceleration": [1, 10]
+  },
+  "loaded_axis_tuning": {
+    "motor_names": ["shoulder_lift", "elbow_flex"],
+    "backup_file": "carepack_so101_loaded_axis_tuning_backup.json",
+    "baseline": {"p": 16, "d": 32, "i": 0, "punch": 16},
+    "stage1": {"p": 20, "d": 36, "i": 0, "punch": 24},
+    "stage2": {"p": 24, "d": 40, "i": 0, "punch": 32}
+  },
+  "continuous_lift": {
+    "enabled": true,
+    "lifting_delta_sign": {"shoulder_lift": -1, "elbow_flex": -1},
+    "minimum_move_pulse": 20,
+    "lead_pulse": 18,
+    "handoff_remaining_pulse": 15
+  },
+  "axis_motion": {
+    "elbow_flex": {
+      "speed_multiplier": 0.7,
+      "maximum_speed": 120,
+      "maximum_acceleration": 2,
+      "segment_limit_pulse": 400,
+      "segment_direction_sign": 1,
+      "segment_handoff_pulse": 15
+    },
+    "wrist_roll": {
+      "speed_multiplier": 1.5,
+      "minimum_speed": 60,
+      "maximum_speed": 450
+    }
+  },
+  "teleoperation": {
+    "leader_port": "COM4",
+    "default_mode": "direct",
+    "control_hz": 10.0,
+    "default_scale": 1.0,
+    "minimum_scale": 0.2,
+    "maximum_scale": 1.0,
+    "input_jump_limit_pulse": 300,
+    "telemetry_interval_seconds": 0.5,
+    "stall_seconds": 2.0,
+    "stall_error_pulse": 25,
+    "progress_epsilon_pulse": 2,
+    "directions": {
+      "shoulder_pan": 1,
+      "shoulder_lift": 1,
+      "elbow_flex": 1,
+      "wrist_flex": 1,
+      "wrist_roll": 1,
+      "gripper": 1
+    },
+    "max_step_pulse": {
+      "shoulder_pan": 12,
+      "shoulder_lift": 8,
+      "elbow_flex": 6,
+      "wrist_flex": 8,
+      "wrist_roll": 12,
+      "gripper": 8
+    },
+    "max_command_lead_pulse": {
+      "shoulder_pan": 30,
+      "shoulder_lift": 24,
+      "elbow_flex": 18,
+      "wrist_flex": 24,
+      "wrist_roll": 30,
+      "gripper": 20
+    },
+    "direct": {
+      "control_hz": 25.0,
+      "scale": 1.0,
+      "speeds": {
+        "shoulder_pan": 0,
+        "shoulder_lift": 0,
+        "elbow_flex": 0,
+        "wrist_flex": 0,
+        "wrist_roll": 0,
+        "gripper": 0
+      },
+      "accelerations": {
+        "shoulder_pan": 8,
+        "shoulder_lift": 5,
+        "elbow_flex": 2,
+        "wrist_flex": 6,
+        "wrist_roll": 8,
+        "gripper": 5
+      }
+    }
+  },
+  "wrist_homing": {
+    "motor_name": "wrist_roll",
+    "backup_file": "carepack_so101_wrist_homing_backup.json",
+    "continuous_ranges": [[0, 4095]],
+    "expected_center_raw": 2048,
+    "verification_tolerance_pulse": 40
+  },
+  "joints": [
+    {"name": "shoulder_pan", "label": "1. 바닥 회전", "motor_id": 1, "center": 2150, "allowed_ranges": [[0, 4095]], "torque_limit": 1000},
+    {"name": "shoulder_lift", "label": "2. 어깨", "motor_id": 2, "center": 2050, "allowed_ranges": [[0, 4095]], "torque_limit": 1000},
+    {"name": "elbow_flex", "label": "3. 팔꿈치", "motor_id": 3, "center": 1900, "allowed_ranges": [[0, 4095]], "torque_limit": 1000},
+    {"name": "wrist_flex", "label": "4. 손목 굽힘", "motor_id": 4, "center": 2000, "allowed_ranges": [[0, 4095]], "torque_limit": 1000},
+    {"name": "wrist_roll", "label": "5. 손목 회전", "motor_id": 5, "center": 2048, "allowed_ranges": [[0, 4095]], "torque_limit": 1000},
+    {"name": "gripper", "label": "6. 집게", "motor_id": 6, "center": 2048, "allowed_ranges": [[0, 4095]], "torque_limit": 300}
+  ],
+  "gripper": {
+    "calibration_file": "carepack_so101_gripper_calibration.json",
+    "default_open_raw": 2243,
+    "default_closed_raw": 816,
+    "endpoint_margin_pulse": 0,
+    "maximum_calibration_span": 2000
+  },
+  "safety": {
+    "minimum_voltage_raw": 105,
+    "maximum_temperature_c": 65,
+    "completion_tolerance_pulse": 15,
+    "motion_poll_seconds": 0.2,
+    "completion_stable_samples": 3,
+    "progress_epsilon_pulse": 2,
+    "stall_seconds": 3.0,
+    "hard_timeout_seconds": 30.0,
+    "correction_timeout_seconds": 6.0,
+    "correction_speed": 60,
+    "correction_acceleration": 1,
+    "telemetry_filter_samples": 3,
+    "current_position_entry_tolerance_pulse": 25,
+    "large_move_confirmation_pulse": 300
+  }
+}
