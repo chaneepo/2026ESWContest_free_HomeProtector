@@ -47,7 +47,7 @@ python motor_control.py
 
 - [웹 팔 서비스](../services/README.md)는 화면용 시뮬레이션을 담당하며, 실제 팔 조작은 이 폴더의 독립 도구에서 수행합니다.
 - [자율 작업 시뮬레이터](../autonomy/README.md)는 가상 관측값으로 미션 흐름을 검증합니다. 인식·적재 센서와의 통합은 [개발 로드맵](../README.md#개발-로드맵)에 정리합니다.
-- [라즈봇 서버의 STOP](../chan/SAFETY_REVIEW.md)은 이 폴더의 독립 팔·ESP32 프로그램을 모두 정지시키는 통합 비상정지가 아닙니다.
+- [라즈봇 서버의 STOP](../raspbot_runtime/SAFETY_REVIEW.md)은 이 폴더의 독립 팔·ESP32 프로그램을 모두 정지시키는 통합 비상정지가 아닙니다.
 
 ## 운전 주의사항
 

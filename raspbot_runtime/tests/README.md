@@ -18,8 +18,8 @@
 저장소 루트에서:
 
 ```bash
-(cd chan && python3 -B -m unittest discover -s tests -v)
-node --test chan/tests/control-client.test.mjs
+(cd raspbot_runtime && python3 -B -m unittest discover -s tests -v)
+node --test raspbot_runtime/tests/control-client.test.mjs
 ```
 
 ## 알아둘 점

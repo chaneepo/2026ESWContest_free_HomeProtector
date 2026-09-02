@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ControlClient, type ControlStatus } from '../chan/web/control-client.mjs';
+import { ControlClient, type ControlStatus } from '../raspbot_runtime/web/control-client.mjs';
 
 const directions = [
   ['turn_left', '↶', '좌회전', 'remote-turn-left'],

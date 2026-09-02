@@ -4,14 +4,16 @@
 
 ## 역할과 코드 위치
 
-| 독립 저장소 | 코드 위치 | 역할 |
+| 독립 저장소 | 이 통합 저장소의 코드 위치 | 역할 |
 |---|---|---|
 | [carepack_web](https://github.com/chaneepo/carepack_web) | `app/`, `components/`, `views/`, `lib/` 등 | 웹 UI와 장치 프록시 |
-| [carepack_raspbot](https://github.com/chaneepo/carepack_raspbot) | `chan/` | Pi 라즈봇 제어 서버·전용 UI |
+| [carepack_raspbot](https://github.com/chaneepo/carepack_raspbot) | `raspbot_runtime/` | Pi 라즈봇 제어 서버·전용 UI |
 | [carepack_arm](https://github.com/chaneepo/carepack_arm) | `motor/` | SO-ARM101·ESP32 도구 |
 | [carepack_vision](https://github.com/chaneepo/carepack_vision) | `vision/` | 학습·라벨링·추론·웹 스트림 |
 | [carepack_autonomy](https://github.com/chaneepo/carepack_autonomy) | `autonomy/` | 하드웨어 없는 자율 작업 시뮬레이터 |
 | [carepack_backend](https://github.com/chaneepo/carepack_backend) | `backend/` | DB·서비스·상태 확인 API |
+
+2026-09-03 이 통합 저장소에서는 `chan/`을 `raspbot_runtime/`으로 이름 변경했습니다. **독립 `carepack_raspbot` 저장소의 `chan/`과 Pi의 `/home/tracelab/chan`은 이번 변경 대상이 아닙니다.**
 
 각 저장소는 자체 `.git`, `main` 브랜치와 루트 README를 갖습니다. 필요한 저장소만 독립적으로 clone할 수 있습니다. 모듈 이름을 Python 패키지 또는 운영 경로로 사용하는 경우를 위해 `backend/`, `autonomy/`, `chan/` 등의 내부 디렉터리는 유지했습니다.
 
@@ -30,7 +32,7 @@
 
 새 기능과 버그 수정은 기능별 저장소에서 진행합니다. 기존 통합본이 필요한 경우 검토한 변경만 별도로 반영하세요. **한쪽에 커밋해도 다른 저장소나 실행 중인 Pi에 자동 반영되지 않습니다.**
 
-웹 `lib/raspbot/control-client.*`와 라즈봇 `chan/web/control-client.*`는 같은 제어 프로토콜을 사용합니다. 프로토콜을 바꾸면 양쪽 테스트를 실행하고 함께 반영합니다.
+독립 웹 저장소의 `lib/raspbot/control-client.*`와 독립 라즈봇 저장소의 `chan/web/control-client.*`(이 통합본에서는 `raspbot_runtime/web/control-client.*`)는 같은 제어 프로토콜을 사용합니다. 프로토콜을 바꾸면 양쪽 테스트를 실행하고 함께 반영합니다.
 
 장치 주소는 웹의 무시된 `.env.local`에만 설정합니다. 코드를 GitHub에 올리는 것과 실제 장치에 배포·모터 운전을 시작하는 것은 별개입니다. 분리 작업은 장치를 재시작하거나 모터를 조작하지 않습니다.
 

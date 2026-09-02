@@ -1,6 +1,35 @@
-# chan - CARE-PACK Raspbot V2 작업공간
+# raspbot_runtime — CARE-PACK 라즈봇 실행 모듈
 
 [프로젝트 홈](../README.md)
+
+## 이름과 역할
+
+기존 `chan/`의 이름을 기능이 드러나는 `raspbot_runtime/`으로 변경했습니다. 설치하는 `raspbot` 드라이버 패키지와 혼동하지 않도록 실행 모듈이라는 뜻의 `runtime`을 붙였습니다.
+
+- 라즈봇 제어 서버: 데모·센서 전용·실기 모드, 이동·회전·STOP API
+- 안전 제어: 속도·시간 제한, 운전 권한·heartbeat, 통신 오류 시 잠금
+- 센서·장치 점검: I2C 연결, 라인·초음파 센서, 바퀴를 띄운 상태의 짧은 구동 시험
+- 전용 웹 리모컨과 통합 웹에서 공유하는 제어 클라이언트
+- 카메라 YOLO 데모, SAM2 마스크 생성, 미디어 보기 보조 도구
+- Raspberry Pi 배포 스크립트와 하드웨어 없는 회귀 테스트
+
+`vision/`은 별도의 학습·라벨링 파이프라인이며, 이 폴더는 라즈봇 현장 실행과 점검이 중심입니다.
+
+### 변경 범위와 기존 장치 호환성
+
+이번 변경은 **이 통합 저장소의 로컬 폴더와 참조 경로**에만 적용됩니다. 독립 `carepack_raspbot` 저장소나 실행 중인 Pi에는 자동 반영되지 않습니다.
+
+- Pi의 기존 `/home/tracelab/chan` 경로, 서비스, 로그 파일은 그대로입니다. 아래 SSH 실행 예시와 과거 점검 기록은 그 경로를 사용합니다.
+- `deploy_to_pi.sh`의 `CHAN_REMOTE_HOST`·`CHAN_REMOTE_DIR`와 기존 원격 기본 경로를 유지합니다. 이번 이름 변경으로 배포나 재시작을 실행하지 않습니다.
+- 내부 Python 패키지 `chan_control`과 웹 안전 이벤트 `chan-emergency-stop`도 호환성을 위해 유지합니다.
+- `sam2_mask.py`의 기본 모델 경로는 기존 Pi 경로입니다. 다른 위치에서는 `--model`로 지정합니다.
+
+로컬 데모 실행은 프로젝트 루트에서 다음과 같이 합니다. 기본 실행은 실제 하드웨어를 사용하지 않습니다.
+
+```sh
+cd raspbot_runtime
+python3 server.py --host 127.0.0.1 --port 8090
+```
 
 ## 폴더와 코드 안내
 
@@ -111,7 +140,7 @@ python3 drive_test.py forward \
 ## 파일 구성
 
 ```text
-chan/
+raspbot_runtime/
 ├── README.md
 ├── OPERATIONS.md
 ├── PROGRESS.md

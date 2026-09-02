@@ -1,4 +1,4 @@
-# CHAN 통합 제어 구조
+# CARE-PACK 라즈봇 실행 모듈 구조
 
 ## 결론
 
@@ -6,7 +6,7 @@
 코드를 실행하는 장치로 사용합니다.
 
 ```text
-MacBook: /Users/jung-yechan/EmbeddedSW/chan
+MacBook: <프로젝트 루트>/raspbot_runtime
              │
              │ deploy_to_pi.sh
              ▼
@@ -18,6 +18,8 @@ Raspberry Pi: /home/tracelab/chan
 
 MacBook/Phone Browser ── http://192.168.0.74:8090 ── 통합 UI
 ```
+
+로컬 폴더명만 `chan`에서 `raspbot_runtime`으로 변경했습니다. Pi의 기존 실행 경로와 서비스는 이동하거나 재시작하지 않았습니다. 원격 경로·`CHAN_REMOTE_HOST`·`CHAN_REMOTE_DIR`·내부 `chan_control` 패키지는 호환성을 위해 유지합니다.
 
 ## 역할 분리
 
@@ -63,7 +65,7 @@ MacBook/Phone Browser ── http://192.168.0.74:8090 ── 통합 UI
 
 ## 개발 원칙
 
-1. VS Code의 로컬 `chan` 폴더를 기본 편집 위치로 사용합니다.
+1. VS Code의 로컬 `raspbot_runtime` 폴더를 기본 편집 위치로 사용합니다.
 2. Raspberry Pi 원격 폴더는 실행·하드웨어 확인에 사용합니다.
 3. 원격에서 긴급 수정했다면 반드시 로컬 원본에도 동일하게 반영합니다.
 4. 실제 하드웨어 모드는 명시적인 실행 옵션으로만 활성화합니다.

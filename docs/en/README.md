@@ -28,4 +28,4 @@ These documents describe the system architecture, module interfaces, and planned
 - `motor/` provides standalone tools for manual control, recorded pose sequences, and leader-arm following.
 - `autonomy/` validates mission workflows with simulated observations and virtual command logs.
 - The backend exposes `/health` for database connectivity; the business API specification guides planned integration.
-- Review the [safety guide](../../chan/SAFETY_REVIEW.md) before hardware use.
+- Review the [safety guide](../../raspbot_runtime/SAFETY_REVIEW.md) before hardware use.

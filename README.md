@@ -48,7 +48,7 @@ CARE-PACK은 사용자의 준비물 목록을 바탕으로 **물품 인식 → �
 
 ## 구현 현황
 
-2026-09-02 기준, 모듈별 제공 기능과 실행 방식을 정리했습니다. 실기 운전 절차는 [운영 문서](chan/OPERATIONS.md)를 참고하세요.
+2026-09-02 기준, 모듈별 제공 기능과 실행 방식을 정리했습니다. 실기 운전 절차는 [운영 문서](raspbot_runtime/OPERATIONS.md)를 참고하세요.
 
 | 기능 | 실행 방식 | 주요 내용 |
 |---|---|---|
@@ -64,7 +64,7 @@ CARE-PACK은 사용자의 준비물 목록을 바탕으로 **물품 인식 → �
 | PostgreSQL 기반 | DB·백엔드 도구 | 핵심 테이블 7개, Alembic, 시드, 테스트, 상태 확인 API |
 | 웹 업무 데이터 | 메모리·목업 서비스 | 물품·루틴·작업 데이터와 화면 동작 확인 |
 
-[자율 작업 시뮬레이션 안내](autonomy/README.md) · [안전 점검 기록](chan/SAFETY_REVIEW.md)
+[자율 작업 시뮬레이션 안내](autonomy/README.md) · [안전 점검 기록](raspbot_runtime/SAFETY_REVIEW.md)
 
 ## 시스템 구조
 
@@ -73,7 +73,7 @@ CARE-PACK은 사용자의 준비물 목록을 바탕으로 **물품 인식 → �
 ```mermaid
 flowchart LR
     UI["CARE-PACK 웹 제어센터"] --> PROXY["장치 API 프록시"]
-    PROXY --> CHAN["Pi: chan 제어 서버"]
+    PROXY --> CHAN["Pi: 라즈봇 제어 서버"]
     CHAN --> I2C["Raspbot V2 · I2C"]
     PROXY --> VISION["별도 카메라·YOLO 서버"]
     UI --> MOCK["웹 작업 시뮬레이션"]
@@ -158,18 +158,18 @@ python3 -m autonomy --scenario verify-failure
 ### 4. 라즈봇 전용 UI — 기본은 데모
 
 ```bash
-cd chan
+cd raspbot_runtime
 python3 server.py --host 127.0.0.1 --port 8090
 ```
 
-브라우저에서 `http://127.0.0.1:8090`을 엽니다. 실기 연결·SSH 터널·배선·운전 절차는 [라즈봇 운영 문서](chan/OPERATIONS.md)를 참고하세요. 새 서버는 `--hardware`로 실행해도 **자동으로 운전 권한을 주지 않습니다.**
+브라우저에서 `http://127.0.0.1:8090`을 엽니다. 실기 연결·SSH 터널·배선·운전 절차는 [라즈봇 운영 문서](raspbot_runtime/OPERATIONS.md)를 참고하세요. 새 서버는 `--hardware`로 실행해도 **자동으로 운전 권한을 주지 않습니다.**
 
 ### 테스트
 
 ```bash
 python3 -B -m unittest discover -s autonomy/tests -v
-(cd chan && python3 -B -m unittest discover -s tests -v)
-node --test chan/tests/control-client.test.mjs
+(cd raspbot_runtime && python3 -B -m unittest discover -s tests -v)
+node --test raspbot_runtime/tests/control-client.test.mjs
 npx tsc --noEmit --incremental false
 npm run build
 ```
@@ -195,8 +195,8 @@ npm run build
 |---|---|
 | 개발환경·DB·Windows 상세 설정 | [한국어](README.ko.md) · [English](README.en.md) |
 | 자율 작업 시뮬레이션·확장 설계 | [Autonomy Docs](autonomy/README.md) |
-| 안전 점검·확인 범위 | [Safety Review](chan/SAFETY_REVIEW.md) |
-| 라즈봇 실행·운영·진행 기록 | [README](chan/README.md) · [Operations](chan/OPERATIONS.md) · [Progress](chan/PROGRESS.md) |
+| 안전 점검·확인 범위 | [Safety Review](raspbot_runtime/SAFETY_REVIEW.md) |
+| 라즈봇 실행·운영·진행 기록 | [README](raspbot_runtime/README.md) · [Operations](raspbot_runtime/OPERATIONS.md) · [Progress](raspbot_runtime/PROGRESS.md) |
 | 시스템 설계 | [프로젝트 개요](docs/ko/00_PROJECT_OVERVIEW.md) · [아키텍처](docs/ko/01_SYSTEM_ARCHITECTURE.md) |
 | 제어·비전 설계 | [상태기계](docs/ko/04_STATE_MACHINE.md) · [비전](docs/ko/05_VISION_DESIGN.md) · [팔 인터페이스](docs/ko/06_SO_ARM101_INTERFACE.md) |
 | API·DB·검증 | [API](docs/ko/03_BACKEND_API_SPEC.md) · [DB](docs/ko/07_DATABASE_SCHEMA.md) · [실패 복구](docs/ko/10_FAILURE_RECOVERY.md) |

@@ -19,7 +19,7 @@
 저장소 루트에서:
 
 ```bash
-cd chan
+cd raspbot_runtime
 python3 server.py --host 127.0.0.1 --port 8090
 ```
 

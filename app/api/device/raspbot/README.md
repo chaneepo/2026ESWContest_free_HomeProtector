@@ -16,7 +16,7 @@
 
 ## 사용 방법
 
-루트 `RASPBOT_API_URL`을 확인한 Pi 서버 또는 SSH 터널 주소로 설정합니다. [프록시 구현](../../../../lib/README.md), [Pi 서버](../../../../chan/README.md)와 함께 사용합니다.
+루트 `RASPBOT_API_URL`을 확인한 Pi 서버 또는 SSH 터널 주소로 설정합니다. [프록시 구현](../../../../lib/README.md), [Pi 서버](../../../../raspbot_runtime/README.md)와 함께 사용합니다.
 
 ## 알아둘 점
 
