@@ -7,7 +7,7 @@
 
 2026 임베디드 소프트웨어 경진대회 · **예선 출품 프로젝트**
 
-[폴더·문서 안내](#repositories) · [프로젝트 소개](#프로젝트-소개) · [구현 현황](#구현-현황) · [시스템 구조](#시스템-구조) · [빠른 시작](#빠른-시작) · [개발 문서](#개발-문서)
+[저장소 안내](#repositories) · [프로젝트 소개](#프로젝트-소개) · [구현 현황](#구현-현황) · [시스템 구조](#시스템-구조) · [빠른 시작](#빠른-시작) · [개발 문서](#개발-문서)
 
 </div>
 
@@ -18,31 +18,20 @@
 
 ## 📁 Repositories
 
-이 프로젝트는 **하나의 Git 저장소 안에 기능별 폴더를 나눈 구조**입니다. 폴더 이름은 코드로, Documentation은 해당 폴더의 README로 연결됩니다.
+CARE-PACK은 기능별 **독립 GitHub 저장소 6개**로 구성됩니다. 아래 Repository 링크는 이 저장소의 폴더가 아니라 각 프로젝트의 별도 저장소로 이동합니다.
 
-| Repository / 폴더 | Documentation | License | Description |
+| Repository | Documentation | License | Description |
 |---|---|---|---|
-| **[app](app/)** | [Web & API Docs](app/README.md) | 미지정 | 웹 진입점·레이아웃·장치 HTTP API |
-| **[components](components/)** | [Component Docs](components/README.md) | 미지정 | 공통 화면 구성·라즈봇 리모컨 |
-| **[views](views/)** | [Page Docs](views/README.md) | 미지정 | 대시보드·자동 작업·수동 제어·비전·물품·이력 |
-| **[chan](chan/)** | [Raspbot Docs](chan/README.md) | 미지정 | Pi 제어 서버·I2C 래퍼·전용 UI·안전 테스트 |
-| **[motor](motor/)** | [Motor & Arm Docs](motor/README.md) | 미지정 | SO-ARM101 Studio·ESP32 모터 제어·털기 시퀀스 |
-| **[vision](vision/)** | [Vision Training Docs](vision/README.md) | 미지정 | SAM2 자동 라벨링 → YOLO segmentation 학습, car_key·lip_balm·watch 인식 모델 |
-| **[autonomy](autonomy/)** | [Autonomy Docs](autonomy/README.md) | 미지정 | 자율 작업 흐름·라인 판단·실패 처리 시뮬레이션 |
-| **[backend](backend/)** | [Backend Docs](backend/README.md) | 미지정 | FastAPI 상태 확인·DB 모델·서비스·마이그레이션 |
-| **[lib](lib/)** | [Device Proxy Docs](lib/README.md) | 미지정 | 라즈봇·카메라 연결과 서버 측 요청 중계 |
-| **[services](services/)** | [Service Docs](services/README.md) | 미지정 | 웹 서비스 계약과 현재 목업 구현 |
-| **[store](store/)** | [State Docs](store/README.md) | 미지정 | React 전역 상태·작업 진행·이벤트 관리 |
-| **[mocks](mocks/)** | [Simulation Docs](mocks/README.md) | 미지정 | 웹 예시 데이터와 작업 시뮬레이션 |
-| **[types](types/)** | [Type Docs](types/README.md) | 미지정 | 장치·작업·물품·인식·이벤트의 공통 타입 |
-| **[scripts](scripts/)** | [Setup Docs](scripts/README.md) | 미지정 | macOS/Linux·Windows 개발환경 준비 |
-| **[public](public/)** | [Web Asset Docs](public/README.md) | 미지정 | 웹 아이콘·링크 공유 이미지 |
-| **[docs](docs/)** | [Design Docs](docs/README.md) | 미지정 | 한국어·영어 설계 문서와 문서 이미지 |
-| **[demo-videos](demo-videos/)** | [Demo Docs](demo-videos/README.md) | 미지정 | 시연 영상·시험 조건·결과 기록 안내 |
+| **[carepack_web](https://github.com/chaneepo/carepack_web)** | [Web Docs](https://github.com/chaneepo/carepack_web/blob/main/README.md) | 미지정 | 통합 웹 UI·라즈봇 리모컨·카메라 스트림·장치 프록시 |
+| **[carepack_raspbot](https://github.com/chaneepo/carepack_raspbot)** | [Raspbot Docs](https://github.com/chaneepo/carepack_raspbot/blob/main/README.md) | 미지정 | Raspberry Pi 제어 서버·I2C·안전 제어·전용 UI |
+| **[carepack_arm](https://github.com/chaneepo/carepack_arm)** | [Arm Docs](https://github.com/chaneepo/carepack_arm/blob/main/README.md) | 미지정 | SO-ARM101 Studio·ESP32 모터·리더암 제어 도구 |
+| **[carepack_vision](https://github.com/chaneepo/carepack_vision)** | [Vision Docs](https://github.com/chaneepo/carepack_vision/blob/main/README.md) | 미지정 | SAM2 라벨링·YOLO segmentation 학습·추론·카메라 전용 서버 |
+| **[carepack_autonomy](https://github.com/chaneepo/carepack_autonomy)** | [Autonomy Docs](https://github.com/chaneepo/carepack_autonomy/blob/main/README.md) | 미지정 | 자율 작업 흐름·라인 판단·실패 복구 시뮬레이션 |
+| **[carepack_backend](https://github.com/chaneepo/carepack_backend)** | [Backend Docs](https://github.com/chaneepo/carepack_backend/blob/main/README.md) | 미지정 | FastAPI·PostgreSQL·데이터 모델·마이그레이션 |
 
 > 저장소 라이선스는 별도 지정 전입니다. 외부 라이브러리의 라이선스는 각 프로젝트의 선언을 따릅니다.
 
-각 모듈의 하위 소스·문서 폴더에도 README를 두었습니다. `node_modules`, 빌드 결과, 가상환경, 캐시와 숨김 도구 설정 폴더는 문서화 대상에서 제외합니다.
+이 메인 저장소는 프로젝트 소개·설계 문서와 **기존 통합 실행본**을 보존합니다. 기존 코드 폴더는 삭제하지 않았으며 새 저장소와 자동 동기화되지 않습니다. 새 모듈 개발은 해당 독립 저장소에서 진행하고 통합본 반영은 별도로 검토합니다. [저장소 구성·유지보수 안내](docs/REPOSITORIES.md)
 
 ## 프로젝트 소개
 
@@ -124,6 +113,8 @@ flowchart LR
 팔 제어 도구의 실행 환경·포트·교정 설정은 [Motor & Arm Docs](motor/README.md)에서 확인할 수 있습니다.
 
 ## 빠른 시작
+
+새 기능별 개발은 위 독립 저장소의 README를 따르세요. 아래는 기존 통합 실행본을 사용하는 방법입니다.
 
 ### 1. 코드 받기
 
