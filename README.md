@@ -7,13 +7,42 @@
 
 2026 임베디드 소프트웨어 경진대회 프로젝트 · **예선 프로토타입**
 
-[프로젝트 소개](#프로젝트-소개) · [구현 현황](#구현-현황) · [시스템 구조](#시스템-구조) · [빠른 시작](#빠른-시작) · [개발 문서](#개발-문서)
+[폴더·문서 안내](#repositories) · [프로젝트 소개](#프로젝트-소개) · [구현 현황](#구현-현황) · [시스템 구조](#시스템-구조) · [빠른 시작](#빠른-시작) · [개발 문서](#개발-문서)
 
 </div>
 
 > **현재 상태** — 라즈봇 수동 제어 코드와 비전 스트림 연동, 웹 작업 시뮬레이션이 있습니다.
 > **라즈봇 자율주행과 로봇팔의 실제 자율 작업은 미완성입니다.**
 > `autonomy/`는 실제 장비에 명령을 보내지 않는 실행 가능한 시뮬레이션 초안입니다. 시뮬레이션 성공을 실물 시연 결과로 간주하지 않습니다.
+
+<a id="repositories"></a>
+
+## 📁 Repositories
+
+이 프로젝트는 **하나의 Git 저장소 안에 기능별 폴더를 나눈 구조**입니다. 폴더 이름은 코드로, Documentation은 해당 폴더의 README로 연결됩니다.
+
+| Repository / 폴더 | Documentation | License | Description |
+|---|---|---|---|
+| **[app](app/)** | [Web & API Docs](app/README.md) | 미지정 | 웹 진입점·레이아웃·장치 HTTP API |
+| **[components](components/)** | [Component Docs](components/README.md) | 미지정 | 공통 화면 구성·라즈봇 리모컨 |
+| **[views](views/)** | [Page Docs](views/README.md) | 미지정 | 대시보드·자동 작업·수동 제어·비전·물품·이력 |
+| **[chan](chan/)** | [Raspbot Docs](chan/README.md) | 미지정 | Pi 제어 서버·I2C 래퍼·전용 UI·안전 테스트 |
+| **[motor](motor/)** | [Motor & Arm Docs](motor/README.md) | 미지정 | 기존 SO-ARM101 Studio·ESP32 모터·털기 코드, 원본 보존 |
+| **[autonomy](autonomy/)** | [Autonomy Docs](autonomy/README.md) | 미지정 | 자율 작업 흐름·라인 판단·실패 처리의 시뮬레이션 초안 |
+| **[backend](backend/)** | [Backend Docs](backend/README.md) | 미지정 | FastAPI 상태 확인·DB 모델·서비스·마이그레이션 |
+| **[lib](lib/)** | [Device Proxy Docs](lib/README.md) | 미지정 | 라즈봇·카메라 연결과 서버 측 요청 중계 |
+| **[services](services/)** | [Service Docs](services/README.md) | 미지정 | 웹 서비스 계약과 현재 목업 구현 |
+| **[store](store/)** | [State Docs](store/README.md) | 미지정 | React 전역 상태·작업 진행·이벤트 관리 |
+| **[mocks](mocks/)** | [Simulation Docs](mocks/README.md) | 미지정 | 웹 예시 데이터와 작업 시뮬레이션 |
+| **[types](types/)** | [Type Docs](types/README.md) | 미지정 | 장치·작업·물품·인식·이벤트의 공통 타입 |
+| **[scripts](scripts/)** | [Setup Docs](scripts/README.md) | 미지정 | macOS/Linux·Windows 개발환경 준비 |
+| **[public](public/)** | [Web Asset Docs](public/README.md) | 미지정 | 웹 아이콘·링크 공유 이미지 |
+| **[docs](docs/)** | [Design Docs](docs/README.md) | 미지정 | 한국어·영어 설계 문서와 문서 이미지 |
+| **[demo-videos](demo-videos/)** | [Demo Docs](demo-videos/README.md) | 미지정 | 시연 영상·시험 조건·결과 기록 안내 |
+
+> 현재 저장소에 별도 `LICENSE` 파일이 없어 위 표에는 “미지정”으로 표시했습니다. 예시 사진의 Apache·CERN 라이선스를 임의로 적용하지 않았습니다. 외부 라이브러리의 라이선스는 해당 프로젝트의 선언을 따로 확인해야 합니다.
+
+각 모듈의 하위 소스·문서 폴더에도 README를 두었습니다. `node_modules`, 빌드 결과, 가상환경, 캐시와 숨김 도구 설정 폴더는 문서화 대상에서 제외합니다.
 
 ## 프로젝트 소개
 
@@ -38,6 +67,7 @@ CARE-PACK은 사용자의 준비물 목록을 바탕으로 **물품 인식 → �
 | 라즈봇 수동 제어 | 구현 / 현장 재확인 필요 | 방향키·버튼, 짧은 이동, Pi 전용 UI의 회전각 입력 |
 | 안전 제어 | 소프트웨어 보강·테스트 | 기본 이동 잠금, STOP 우선 처리, 운전 권한 만료, 통신 감시 |
 | 카메라·YOLO 화면 | 연동 코드 구현 | 별도 카메라 서버의 상태·MJPEG 영상 연결 |
+| 기존 팔·모터 프로그램 | 별도 코드 보존 | SO-ARM101 수동·고정 시퀀스·리더암 추종, ESP32 털기 도구. 웹 자율 흐름과 미통합 |
 | 작업 상태 전이·팔 UI | 시뮬레이션 | 계획·집기·이동·놓기·검증, 실패 복구 연출 |
 | 라즈봇 자율주행 | **시뮬레이션 초안** | 라인 기반 방향 판단, 장애물·센서 유효성 검사 |
 | 로봇팔 자율 작업 | **시뮬레이션 초안** | 도킹 확인 후 집기·놓기, 파지 실패 시 1회 재시도 |
@@ -99,8 +129,8 @@ flowchart LR
 ### 1. 코드 받기
 
 ```bash
-git clone https://github.com/chaneepo/2026_ESW_HomeProtector.git
-cd 2026_ESW_HomeProtector
+git clone https://github.com/chaneepo/2026ESWContest_free_HomeProtector.git
+cd 2026ESWContest_free_HomeProtector
 ```
 
 ### 2. 웹 제어센터
@@ -155,21 +185,6 @@ npm run build
 ```
 
 하드웨어 없이 실행하는 테스트입니다. 테스트 통과는 실제 바퀴·팔의 안전성이나 정확도 검증을 대체하지 않습니다.
-
-## 저장소 구성
-
-```text
-2026_ESW_HomeProtector/
-├── app/                # 웹 진입점·장치 API 프록시
-├── components/         # 공통 UI·라즈봇 리모컨
-├── views/              # 대시보드·비전·작업 화면
-├── services/ & mocks/  # 서비스 계약·웹 시뮬레이션
-├── chan/               # Pi 제어 서버·전용 UI·안전 테스트
-├── autonomy/           # 자율 작업 초안·가상 관측·회귀 테스트
-├── backend/            # FastAPI·DB 모델·마이그레이션
-├── docs/ko/ & docs/en/ # 아키텍처·명세·설계 문서
-└── scripts/            # macOS/Linux·Windows 개발환경 준비
-```
 
 ## 예선에서 본선까지
 

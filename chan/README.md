@@ -1,5 +1,15 @@
 # chan - CARE-PACK Raspbot V2 작업공간
 
+[프로젝트 홈](../README.md)
+
+## 폴더와 코드 안내
+
+| 폴더 | Documentation | 역할 |
+|---|---|---|
+| [chan_control/](chan_control/) | [제어 래퍼 안내](chan_control/README.md) | I2C 드라이버·짧은 이동·센서 |
+| [web/](web/) | [컨트롤러 UI 안내](web/README.md) | Pi 화면·공통 운전 클라이언트 |
+| [tests/](tests/) | [안전 테스트 안내](tests/README.md) | 가상 하드웨어·HTTP·브라우저 회귀 테스트 |
+
 이 폴더는 Raspberry Pi에 이미 설치된 `raspbot==0.1.2` 패키지를 이용해
 CARE-PACK 이동 로봇을 개발하기 위한 별도 작업공간입니다.
 
