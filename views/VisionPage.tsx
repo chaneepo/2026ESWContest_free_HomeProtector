@@ -20,6 +20,10 @@ export function VisionPage() {
   const [message, setMessage] = useState('라즈봇 카메라 연결 확인 중');
 
   useEffect(() => {
+    // The mjpeg stream holds its upstream connection open indefinitely, so polling
+    // /status while streaming contends for the same origin's connection pool and
+    // times out. The <img> onLoad/onError already reports connection health then.
+    if (streaming) return;
     let cancelled = false;
     const checkStatus = async () => {
       try {
@@ -36,7 +40,7 @@ export function VisionPage() {
     checkStatus();
     const timer = window.setInterval(checkStatus, 5_000);
     return () => { cancelled = true; window.clearInterval(timer); };
-  }, []);
+  }, [streaming]);
 
   const toggleStream = () => {
     if (streaming) {
@@ -56,7 +60,7 @@ export function VisionPage() {
     <PageHeader eyebrow="RASPBOT U20CAM · YOLO11N" title="실시간 비전 인식" description="라즈봇 위 카메라 영상을 YOLO11n 마스킹 결과와 함께 확인합니다." action={<button className={streaming ? 'secondary outline' : 'primary'} onClick={toggleStream}>{streaming ? '영상 끄기' : '실시간 영상 켜기'}</button>} />
     <div className="vision-layout">
       <section className="panel camera-panel"><div className="panel-head"><div><p>YOLO 실시간 스트림</p><span>U20CAM · 라즈베리파이 /mjpeg</span></div><span className={`status-pill ${connected ? 'online' : 'offline'}`}><i /> {streaming && connected ? 'LIVE' : connected ? '연결됨' : '오프라인'}</span></div><div className={`camera-view live-camera ${streaming ? 'streaming' : ''}`}>
-        {streaming ? <img key={streamKey} src={`/api/device/vision/mjpeg?session=${streamKey}`} alt="YOLO11n 실시간 객체 인식 영상" onLoad={() => setMessage('YOLO11n 실시간 인식 중')} onError={() => { setStreaming(false); setConnected(false); setMessage('영상 스트림을 열 수 없습니다.'); }} /> : <div className="camera-empty"><i>◉</i><b>카메라 대기 중</b><span>{message}</span><button onClick={toggleStream}>스트림 연결</button></div>}
+        {streaming ? <img key={streamKey} src={`/api/device/vision/mjpeg?session=${streamKey}`} alt="YOLO11n 실시간 객체 인식 영상" onLoad={() => { setConnected(true); setMessage('YOLO11n 실시간 인식 중'); }} onError={() => { setStreaming(false); setConnected(false); setMessage('영상 스트림을 열 수 없습니다.'); }} /> : <div className="camera-empty"><i>◉</i><b>카메라 대기 중</b><span>{message}</span><button onClick={toggleStream}>스트림 연결</button></div>}
         <div className="live-indicator"><i /> YOLO11N · SEG</div><footer><span>U20CAM 1280 × 720</span><span>입력 320 px</span><span>{device}</span></footer>
       </div></section>
       <aside className="vision-side"><section className="panel vision-runtime"><div className="panel-head"><div><p>추론 상태</p><span>현재 비전 서버 정보</span></div></div><dl className="pose-list"><div><dt>연결 상태</dt><dd className={connected ? 'success-text' : ''}>{message}</dd></div><div><dt>모델</dt><dd>{modelName}</dd></div><div><dt>카메라</dt><dd>/dev/video0</dd></div><div><dt>신뢰도 기준</dt><dd>0.35</dd></div><div><dt>추론 장치</dt><dd>{device}</dd></div></dl></section>

@@ -187,3 +187,73 @@ Raspberry Pi USB-C 어댑터로 충전하지 않습니다. 본체 전원 스위�
 - 충전기만 콘센트에 꽂아도 LED가 꺼짐: 콘센트 또는 충전기 점검 필요
 
 충전 상태는 제어보드 LED가 아니라 충전기 어댑터 본체의 LED로 확인합니다.
+
+## CARE-PACK 웹앱과 연동해서 실시간으로 켜기
+
+`tracelab-desktop` (Raspbot + RobotUnified_v2가 같이 설치된 이 기기)에서 아래 두
+서버를 켜면, 맥에서 실행 중인 CARE-PACK 웹앱(`localhost:3000`)의 "비전"
+페이지와 "라즈봇 리모컨"에서 실시간 영상과 실제 구동을 확인할 수 있습니다.
+
+### 1. 비전(카메라 + YOLO11n) 서버 켜기
+
+```bash
+cd /home/tracelab/RobotUnified_v2
+nohup .venv/bin/python main.py --host :: --port 8000 \
+  --device_index 0 --width 640 --height 480 --fps 10 \
+  --onnx_path /home/tracelab/RobotUnified_v2/models/yolo11n.pt \
+  --input_size 320 --conf_thres 0.25 > /tmp/vision_server.log 2>&1 &
+disown
+```
+
+### 2. 라즈봇 구동 서버 켜기
+
+```bash
+cd /home/tracelab/chan
+nohup /home/tracelab/raspbot_ws/venv/bin/python server.py \
+  --host :: --port 8090 --sensors-only > /tmp/chan_server.log 2>&1 &
+disown
+```
+
+`nohup` + `disown`을 붙여야 SSH 세션이 끊겨도 서버가 같이 죽지 않습니다. 죽은
+것 같으면 `ss -tlnp | grep 8090`(또는 `8000`)으로 확인하고, 로그는
+`/tmp/chan_server.log` / `/tmp/vision_server.log`에서 확인합니다.
+
+### 3. 맥 쪽 설정 (`.env.local`, 저장소 루트)
+
+```bash
+CAMERA_API_URL=http://<tracelab-desktop의 IPv6 주소>:8000
+RASPBOT_API_URL=http://<tracelab-desktop의 IPv4 주소>:8090
+```
+
+- 비전 서버는 `--host ::`(IPv6 전용)라서 카메라는 반드시 IPv6 주소를 씁니다.
+- 라즈봇 서버는 IPv4/IPv6 둘 다 되므로 IPv4를 씁니다 (더 안정적으로 확인됨).
+- **`tracelab-desktop.local` 같은 mDNS 호스트네임은 쓰지 않습니다** — 이 웹앱이
+  개발 중 사용하는 Cloudflare Workers 런타임(workerd)이 `.local` 주소를 안정적으로
+  못 풀어서 간헐적으로 500 에러가 납니다. 반드시 숫자 IP를 직접 넣습니다.
+- IP는 재부팅하거나 네트워크가 바뀌면 달라집니다. 현재 주소 확인:
+
+```bash
+hostname -I                              # IPv4 목록
+ip -6 addr show scope global | grep inet6  # IPv6 목록 (mngtmpaddr 쪽이 비교적 안정적)
+```
+
+`.env.local` 수정 후에는 맥에서 `npm run dev`를 재시작해야 반영됩니다.
+
+### 4. 방화벽
+
+`8090/tcp`가 원래 `192.168.0.0/24`에서만 허용되어 있었습니다. 다른 네트워크
+(핫스팟 등)에서 접속하려면 한 번만 열어둡니다.
+
+```bash
+sudo ufw allow 8090/tcp comment 'CHAN controller (all networks)'
+```
+
+### 5. CARE-PACK UI에서 라즈봇 조작
+
+`localhost:3000` 아무 페이지에서 우측 하단 "라즈봇 리모컨" 버튼을 누르면:
+
+1. "주변에 사람·케이블 없음" 체크
+2. "실기모드" 클릭 (체크 안 하면 비활성화되어 안 눌립니다)
+3. 방향 버튼 또는 키보드(`↑↓←→`/`WASD`/`Q`·`E` 평행이동/`Space` 정지)로 구동
+
+"안전모드" 버튼은 체크박스 없이 언제든 눌리고, 누르는 즉시 모터를 정지합니다.

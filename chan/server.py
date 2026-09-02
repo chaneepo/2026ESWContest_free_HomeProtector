@@ -156,21 +156,26 @@ class ControllerRuntime:
                 f"duration must be greater than 0 and at most {self.limits.max_duration}"
             )
 
-        with self._lock:
-            try:
-                if self.hardware:
-                    self._ensure_controller().pulse(
-                        motion, speed=speed, duration=duration
-                    )
-                self.state.last_action = motion.value
-                self.state.last_speed = speed
-                self.state.last_duration = duration
-                self.state.last_angle = None
-                self.state.command_count += 1
-                self.state.last_error = None
-            except Exception as exc:
-                self.state.last_error = str(exc)
-                raise
+        if not self._lock.acquire(blocking=False):
+            # A pulse is already in flight. Drop this command instead of queuing
+            # behind it, so rapid keypresses feel responsive rather than buffered.
+            raise RuntimeError("이전 이동 명령이 아직 처리 중입니다")
+        try:
+            if self.hardware:
+                self._ensure_controller().pulse(
+                    motion, speed=speed, duration=duration
+                )
+            self.state.last_action = motion.value
+            self.state.last_speed = speed
+            self.state.last_duration = duration
+            self.state.last_angle = None
+            self.state.command_count += 1
+            self.state.last_error = None
+        except Exception as exc:
+            self.state.last_error = str(exc)
+            raise
+        finally:
+            self._lock.release()
         return self.snapshot()
 
     def turn(self, direction: str, angle: float, speed: int) -> dict[str, Any]:
@@ -198,23 +203,26 @@ class ControllerRuntime:
             raise ValueError("requested turn is too long for the current speed")
 
         motion = Motion.TURN_LEFT if direction == "left" else Motion.TURN_RIGHT
-        with self._lock:
-            try:
-                if self.hardware:
-                    self._ensure_controller().pulse(
-                        motion,
-                        speed=speed,
-                        duration=duration,
-                    )
-                self.state.last_action = motion.value
-                self.state.last_speed = speed
-                self.state.last_duration = round(duration, 3)
-                self.state.last_angle = angle
-                self.state.command_count += 1
-                self.state.last_error = None
-            except Exception as exc:
-                self.state.last_error = str(exc)
-                raise
+        if not self._lock.acquire(blocking=False):
+            raise RuntimeError("이전 이동 명령이 아직 처리 중입니다")
+        try:
+            if self.hardware:
+                self._ensure_controller().pulse(
+                    motion,
+                    speed=speed,
+                    duration=duration,
+                )
+            self.state.last_action = motion.value
+            self.state.last_speed = speed
+            self.state.last_duration = round(duration, 3)
+            self.state.last_angle = angle
+            self.state.command_count += 1
+            self.state.last_error = None
+        except Exception as exc:
+            self.state.last_error = str(exc)
+            raise
+        finally:
+            self._lock.release()
         return self.snapshot()
 
     def stop(self) -> dict[str, Any]:

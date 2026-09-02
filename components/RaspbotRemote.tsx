@@ -44,20 +44,39 @@ export function RaspbotRemote() {
   const movementEnabledRef = useRef(movementEnabled);
   movementEnabledRef.current = movementEnabled;
 
+  const failureStreakRef = useRef(0);
+
+  const fetchOnce = async () => {
+    const response = await fetch('/api/device/raspbot/status', { cache: 'no-store' });
+    const data = (await response.json()) as RaspbotStatus;
+    if (!response.ok) throw new Error(data.error || '라즈봇 연결 실패');
+    return data;
+  };
+
   const refreshStatus = useCallback(async () => {
     try {
-      const response = await fetch('/api/device/raspbot/status', { cache: 'no-store' });
-      const data = (await response.json()) as RaspbotStatus;
-      setConnected(response.ok);
-      if (response.ok) {
-        setStatus(data);
-        setMessage(data.movement_enabled ? '실기모드 · 이동 가능' : `${data.mode ?? '센서'} 모드 · 이동 잠금`);
-      } else {
-        setMessage(data.error || '라즈봇 연결 실패');
+      let data: RaspbotStatus;
+      try {
+        data = await fetchOnce();
+      } catch {
+        // The dev fetch runtime occasionally drops a single request -- retry
+        // once immediately before counting this poll as a real miss.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        data = await fetchOnce();
       }
+      failureStreakRef.current = 0;
+      setConnected(true);
+      setStatus(data);
+      setMessage(data.movement_enabled ? '실기모드 · 이동 가능' : `${data.mode ?? '센서'} 모드 · 이동 잠금`);
     } catch {
-      setConnected(false);
-      setMessage('라즈봇 연결 실패');
+      // A single dropped poll is normal dev-server/network jitter, not a real
+      // outage -- only flip to disconnected after a couple of misses in a row
+      // so the badge doesn't flap on every transient hiccup.
+      failureStreakRef.current += 1;
+      if (failureStreakRef.current >= 2) {
+        setConnected(false);
+        setMessage('라즈봇 연결 실패');
+      }
     }
   }, []);
 
