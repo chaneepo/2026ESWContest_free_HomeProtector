@@ -2,7 +2,7 @@
 
 CARE-PACK plans items for an outing, uses a robot arm to move them into a bag, and verifies that loading physically succeeded. This repository currently contains the Korean control-center UI and a pre-hardware simulation.
 
-> Robot, vision, and sensor states shown in the UI are simulated. PostgreSQL models, migrations, and seed data are implemented, but the physical SO-ARM101, camera, ESP32, and frontend integration with business APIs are not implemented yet.
+> Update (2026-09-02): manual Raspbot control and camera-server integration code are available. Job/arm UI behavior is simulated. Physical autonomous navigation, autonomous arm operation, and load-sensor integration remain incomplete. See the [current status](README.md), [simulation-only autonomy prototype](autonomy/README.md), and [safety review](chan/SAFETY_REVIEW.md). Passing software tests does not establish physical robot safety.
 
 ## Development environment setup
 

@@ -28,11 +28,12 @@ export function VisionPage() {
     const checkStatus = async () => {
       try {
         const response = await fetch('/api/device/vision/status', { cache: 'no-store' });
-        const data = await response.json();
+        const raw: unknown = await response.json();
+        const data: CameraStatus = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as CameraStatus : {};
         if (cancelled) return;
         setConnected(response.ok);
         setStatus(response.ok ? data : {});
-        setMessage(response.ok ? '카메라 서버 연결됨' : (data.error || '카메라 서버 연결 실패'));
+        setMessage(response.ok ? '카메라 서버 연결됨' : (typeof data.error === 'string' ? data.error : '카메라 서버 연결 실패'));
       } catch {
         if (!cancelled) { setConnected(false); setMessage('카메라 서버 연결 실패'); }
       }

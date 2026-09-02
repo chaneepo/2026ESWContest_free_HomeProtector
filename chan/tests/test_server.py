@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import unittest
+from types import SimpleNamespace
 from http.server import ThreadingHTTPServer
 
 from server import ControllerRuntime, IPv6ThreadingHTTPServer, server_class_for
@@ -15,6 +16,12 @@ class ControllerRuntimeTests(unittest.TestCase):
 
         def stop(self) -> None:
             self.stop_calls += 1
+
+        def connect(self):
+            pass
+
+        def read_line(self):
+            return SimpleNamespace(x1=False, x2=True, x3=True, x4=False, raw=6)
 
     def test_demo_move_records_command_without_hardware(self) -> None:
         runtime = ControllerRuntime(hardware=False)
@@ -81,9 +88,8 @@ class ControllerRuntimeTests(unittest.TestCase):
         self.assertFalse(runtime.snapshot()["movement_enabled"])
 
     def test_mode_switch_stops_before_changing_movement_permission(self) -> None:
-        runtime = ControllerRuntime()
         controller = self.FakeController()
-        runtime._controller = controller  # type: ignore[assignment]
+        runtime = ControllerRuntime(controller_factory=lambda: controller)
 
         hardware = runtime.set_mode("hardware", confirm_safe=True)
         safe = runtime.set_mode("safe")

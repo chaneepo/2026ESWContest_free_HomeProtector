@@ -5,6 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+import math
+import secrets
+import signal
 import socket
 import threading
 import time
@@ -54,223 +57,328 @@ class RuntimeState:
 
 
 class ControllerRuntime:
-    """Serialize robot access and separate sensing from motor permission."""
+    """Single motion owner; never hold the state/I2C lock during a timed wait."""
 
-    def __init__(self, *, hardware: bool = False, sensors_only: bool = False) -> None:
+    def __init__(self, *, hardware: bool = False, sensors_only: bool = False,
+                 controller_factory=None, clock=time.monotonic, lease_seconds=5.0) -> None:
         if hardware and sensors_only:
             raise ValueError("hardware and sensors_only modes are mutually exclusive")
-        self.hardware = hardware
-        self.sensors_only = sensors_only
-        self.sensor_hardware = hardware or sensors_only
+        # Even legacy --hardware starts locked. Only explicit UI arming grants a lease.
+        self.hardware = False
+        self.sensors_only = hardware or sensors_only
+        self.sensor_hardware = self.sensors_only
         self.limits = SafetyLimits(max_speed=80, max_duration=0.5)
         self.turn_limits = SafetyLimits(max_speed=80, max_duration=4.0)
         self.turn_seconds_per_90 = 1.0
         self.turn_reference_speed = 40
-        mode = "hardware" if hardware else "sensors" if sensors_only else "demo"
-        self.state = RuntimeState(mode=mode)
-        self._controller: RaspbotController | None = None
-        self._lock = threading.Lock()
+        self.state = RuntimeState(mode="sensors" if self.sensors_only else "demo")
+        self._factory = controller_factory or (lambda: RaspbotController(limits=self.turn_limits))
+        self._controller = None
+        self._lock = threading.RLock()
+        self._motion_lock = threading.Lock()
+        self._request_lock = threading.Lock()
+        self._stop_serial = 0
+        self._halt = threading.Event()
+        self._halt.set()
+        self._active_cancel = None
+        self._token = None
+        self._clock = clock
+        self._lease_seconds = float(lease_seconds)
+        self._deadline = 0.0
+        self._closing = False
+        self._watchdog_exit = threading.Event()
+        self._watchdog = None
+        self._revision = 0
+        self._instance_id = secrets.token_hex(8)
 
     def snapshot(self) -> dict[str, Any]:
-        data = asdict(self.state)
-        data.update(
-            {
-                "hardware_enabled": self.hardware,
-                "sensors_enabled": self.sensor_hardware,
-                "movement_enabled": self.hardware,
-                "max_speed": self.limits.max_speed,
-                "max_duration": self.limits.max_duration,
-                "min_turn_angle": 1,
-                "max_turn_angle": 180,
-                "turn_seconds_per_90": self.turn_seconds_per_90,
-                "turn_reference_speed": self.turn_reference_speed,
-                "timestamp": time.time(),
-            }
-        )
-        return data
+        with self._lock:
+            data = asdict(self.state)
+            data.update(
+                safety_protocol=2,
+                hardware_enabled=self.hardware,
+                sensors_enabled=self.sensor_hardware,
+                movement_enabled=bool(self.hardware and self.state.connected and self._token
+                                      and not self._halt.is_set() and self._clock() < self._deadline),
+                busy=self._active_cancel is not None,
+                max_speed=self.limits.max_speed,
+                max_duration=self.limits.max_duration,
+                min_turn_angle=1, max_turn_angle=180,
+                turn_seconds_per_90=self.turn_seconds_per_90,
+                turn_reference_speed=self.turn_reference_speed,
+                control_lease_seconds=self._lease_seconds,
+                revision=self._revision, instance_id=self._instance_id,
+                timestamp=time.time(),
+            )
+            # Never expose the owner's control token through status polling.
+            return data
 
-    def _ensure_controller(self) -> RaspbotController:
+    def _ensure_controller(self):
         if self._controller is None:
-            self._controller = RaspbotController(limits=self.turn_limits)
-            self._controller.connect()
+            candidate = self._factory()
+            try:
+                candidate.connect()
+                candidate.read_line()  # Read-only I2C response, not just opening /dev/i2c-1.
+            except Exception:
+                try:
+                    candidate.close()
+                except Exception:
+                    pass
+                self.state.connected = False
+                raise
+            self._controller = candidate  # Publish only after a successful probe.
             self.state.connected = True
         return self._controller
 
-    def set_mode(self, mode: str, *, confirm_safe: bool = False) -> dict[str, Any]:
-        """Switch between movement-locked sensing and real motor control safely."""
-        normalized = str(mode).strip().lower()
-        aliases = {"safe": "sensors", "sensors": "sensors", "hardware": "hardware"}
-        if normalized not in aliases:
-            raise ValueError("mode must be safe, sensors, or hardware")
-        target = aliases[normalized]
-        if target == "hardware" and confirm_safe is not True:
-            raise PermissionError("실기모드 전환 전 주변 안전 확인이 필요합니다")
+    def _disarm_locked(self):
+        self._halt.set()
+        if self._active_cancel is not None:
+            self._active_cancel.set()
+        self._token = None
+        self._deadline = 0.0
+        self.hardware = False
+        self.sensors_only = self.sensor_hardware
+        self.state.mode = "sensors" if self.sensor_hardware else "demo"
+        self.state.last_action = "stop"
+        self.state.last_speed = 0
+        self.state.last_duration = 0.0
+        self.state.last_angle = None
+        self._revision += 1
 
-        with self._lock:
-            previous = (
-                self.hardware,
-                self.sensors_only,
-                self.sensor_hardware,
-                self.state.mode,
-            )
+    def _fault_locked(self, exc):
+        self._disarm_locked()
+        self.state.connected = False
+        self.state.last_error = str(exc)
+        controller, self._controller = self._controller, None
+        if controller is not None:
             try:
-                # Hardware mode must prove the I2C controller is reachable before
-                # unlocking movement. Safe mode only needs to stop a controller
-                # that is already connected -- it must not require hardware to
-                # exist just to lock movement back down.
-                if target == "hardware":
-                    controller = self._ensure_controller()
-                    controller.stop()
-                elif self._controller is not None:
-                    self._controller.stop()
-                self.hardware = target == "hardware"
-                self.sensors_only = target == "sensors"
-                self.sensor_hardware = True
-                self.state.mode = target
-                self.state.last_action = "stop"
-                self.state.last_speed = 0
-                self.state.last_duration = 0.0
-                self.state.last_angle = None
+                controller.stop()
+            except Exception as stop_exc:
+                self.state.last_error += f"; STOP failed: {stop_exc}"
+            try:
+                controller.close()
+            except Exception as close_exc:
+                self.state.last_error += f"; close failed: {close_exc}"
+
+    def set_mode(self, mode: str, *, confirm_safe: bool = False) -> dict[str, Any]:
+        target = {"safe": "sensors", "sensors": "sensors", "hardware": "hardware"}.get(str(mode).lower())
+        if target is None:
+            raise ValueError("mode must be safe, sensors, or hardware")
+        if target == "sensors":
+            return self.stop(sensor_mode=True)
+        if confirm_safe is not True:
+            raise PermissionError("주변 안전 확인이 필요합니다")
+        with self._request_lock:
+            serial = self._stop_serial
+        with self._lock:
+            if self._closing:
+                raise PermissionError("Server is shutting down")
+            if self.hardware or self._motion_lock.locked():
+                raise PermissionError("먼저 STOP을 누르고 현재 동작이 종료된 뒤 다시 전환하세요")
+            try:
+                self.sensor_hardware = self.sensors_only = True
+                self._halt.clear()
+                controller = self._ensure_controller()
+                controller.stop()
+                with self._request_lock:
+                    cancelled = serial != self._stop_serial
+                if cancelled or self._halt.is_set():
+                    raise PermissionError("STOP 요청으로 실기모드 전환이 취소됐습니다")
+                self._token = secrets.token_urlsafe(32)
+                self._deadline = self._clock() + self._lease_seconds
+                self.hardware, self.sensors_only = True, False
+                self.state.mode = "hardware"
                 self.state.last_error = None
+                self._revision += 1
+                return {**self.snapshot(), "control_token": self._token}
             except Exception as exc:
-                (
-                    self.hardware,
-                    self.sensors_only,
-                    self.sensor_hardware,
-                    self.state.mode,
-                ) = previous
-                self.state.last_error = str(exc)
+                self._fault_locked(exc)
                 raise
-        return self.snapshot()
 
-    def move(self, action: str, speed: int, duration: float) -> dict[str, Any]:
-        if self.sensors_only:
-            raise PermissionError("Movement is locked in sensor-only mode")
+    def _validate_control_locked(self, token):
+        if self.hardware and self._clock() >= self._deadline:
+            self.stop(reason="통신 확인 시간 초과: 이동 잠금")
+        if (not self.hardware or self._halt.is_set() or not isinstance(token, str)
+                or not self._token or not secrets.compare_digest(token, self._token)):
+            raise PermissionError("이동이 잠겨 있거나 운전 권한이 만료됐습니다. 안전 확인 후 다시 전환하세요")
+
+    def heartbeat(self, token):
+        with self._lock:
+            self._validate_control_locked(token)
+            self._deadline = self._clock() + self._lease_seconds
+            return self.snapshot()
+
+    @staticmethod
+    def _speed(value, maximum):
+        number = float(value)
+        if isinstance(value, bool) or not math.isfinite(number) or not number.is_integer() or not 1 <= number <= maximum:
+            raise ValueError(f"speed must be an integer between 1 and {maximum}")
+        return int(number)
+
+    def move(self, action, speed, duration, *, control_token=None):
         motion = Motion(action)
-        speed = int(speed)
+        speed = self._speed(speed, self.limits.max_speed)
+        if isinstance(duration, bool):
+            raise ValueError("duration must be numeric, not boolean")
         duration = float(duration)
-        if not 1 <= speed <= self.limits.max_speed:
-            raise ValueError(f"speed must be between 1 and {self.limits.max_speed}")
-        if not 0.0 < duration <= self.limits.max_duration:
-            raise ValueError(
-                f"duration must be greater than 0 and at most {self.limits.max_duration}"
-            )
+        if not math.isfinite(duration) or not 0 < duration <= self.limits.max_duration:
+            raise ValueError(f"duration must be greater than 0 and at most {self.limits.max_duration}")
+        return self._run_motion(motion, speed, duration, None, control_token)
 
-        if not self._lock.acquire(blocking=False):
-            # A pulse is already in flight. Drop this command instead of queuing
-            # behind it, so rapid keypresses feel responsive rather than buffered.
-            raise RuntimeError("이전 이동 명령이 아직 처리 중입니다")
-        try:
-            if self.hardware:
-                self._ensure_controller().pulse(
-                    motion, speed=speed, duration=duration
-                )
-            self.state.last_action = motion.value
-            self.state.last_speed = speed
-            self.state.last_duration = duration
-            self.state.last_angle = None
-            self.state.command_count += 1
-            self.state.last_error = None
-        except Exception as exc:
-            self.state.last_error = str(exc)
-            raise
-        finally:
-            self._lock.release()
-        return self.snapshot()
-
-    def turn(self, direction: str, angle: float, speed: int) -> dict[str, Any]:
-        if self.sensors_only:
-            raise PermissionError("Movement is locked in sensor-only mode")
-
-        direction = str(direction).lower()
+    def turn(self, direction, angle, speed, *, control_token=None):
         if direction not in ("left", "right"):
             raise ValueError("direction must be left or right")
+        if isinstance(angle, bool):
+            raise ValueError("angle must be numeric, not boolean")
         angle = float(angle)
-        speed = int(speed)
-        if not 1 <= angle <= 180:
+        speed = self._speed(speed, self.limits.max_speed)
+        if not math.isfinite(angle) or not 1 <= angle <= 180:
             raise ValueError("angle must be between 1 and 180 degrees")
-        if not 1 <= speed <= self.limits.max_speed:
-            raise ValueError(f"speed must be between 1 and {self.limits.max_speed}")
-
-        duration = (
-            angle
-            / 90.0
-            * self.turn_seconds_per_90
-            * self.turn_reference_speed
-            / speed
-        )
-        if duration > self.turn_limits.max_duration:
-            raise ValueError("requested turn is too long for the current speed")
-
+        duration = angle / 90 * self.turn_seconds_per_90 * self.turn_reference_speed / speed
+        if not math.isfinite(duration) or duration > self.turn_limits.max_duration:
+            raise ValueError("requested turn is too long")
         motion = Motion.TURN_LEFT if direction == "left" else Motion.TURN_RIGHT
-        if not self._lock.acquire(blocking=False):
+        return self._run_motion(motion, speed, duration, angle, control_token)
+
+    def _run_motion(self, motion, speed, duration, angle, token):
+        if not self._motion_lock.acquire(blocking=False):
             raise RuntimeError("이전 이동 명령이 아직 처리 중입니다")
+        cancel = threading.Event()
+        controller = None
         try:
-            if self.hardware:
-                self._ensure_controller().pulse(
-                    motion,
-                    speed=speed,
-                    duration=duration,
-                )
-            self.state.last_action = motion.value
-            self.state.last_speed = speed
-            self.state.last_duration = round(duration, 3)
-            self.state.last_angle = angle
-            self.state.command_count += 1
-            self.state.last_error = None
-        except Exception as exc:
-            self.state.last_error = str(exc)
-            raise
+            with self._lock:
+                if self._closing or self.sensors_only:
+                    raise PermissionError("Movement is locked")
+                if self.hardware:
+                    self._validate_control_locked(token)
+                    controller = self._ensure_controller()
+                self._active_cancel = cancel
+                self.state.last_action = motion.value
+                self.state.last_speed = speed
+                self.state.last_duration = round(duration, 3)
+                self.state.last_angle = angle
+                try:
+                    if controller is not None:
+                        controller.start_motion(motion, speed=speed)
+                    self.state.command_count += 1
+                    self.state.last_error = None
+                    self._revision += 1
+                except Exception as exc:
+                    self._fault_locked(exc)
+                    raise
+            # STOP/watchdog can now take _lock and write STOP immediately.
+            if controller is not None:
+                cancel.wait(duration)
         finally:
-            self._lock.release()
-        return self.snapshot()
-
-    def stop(self) -> dict[str, Any]:
-        with self._lock:
             try:
-                if self.hardware and self._controller is not None:
+                with self._lock:
+                    try:
+                        if controller is not None and self._controller is controller:
+                            controller.stop()
+                    except Exception as exc:
+                        self._fault_locked(exc)
+                        raise
+                    finally:
+                        if self._active_cancel is cancel:
+                            self._active_cancel = None
+            finally:
+                self._motion_lock.release()
+        return {**self.snapshot(), "interrupted": cancel.is_set()}
+
+    def stop(self, *, reason=None, sensor_mode=False):
+        # This signal also cancels a slow in-flight arming request.
+        with self._request_lock:
+            self._stop_serial += 1
+            self._halt.set()
+            if self._active_cancel is not None:
+                self._active_cancel.set()
+        with self._lock:
+            if sensor_mode:
+                self.sensor_hardware = True
+            self._disarm_locked()  # Never restore hardware mode after a stop failure.
+            confirmed = False
+            try:
+                if self._controller is not None:
                     self._controller.stop()
-                self.state.last_action = "stop"
-                self.state.last_speed = 0
-                self.state.last_duration = 0.0
-                self.state.last_angle = None
-                self.state.last_error = None
+                    confirmed = True
+                if reason:
+                    self.state.last_error = reason
             except Exception as exc:
-                self.state.last_error = str(exc)
+                self._fault_locked(exc)
                 raise
-        return self.snapshot()
+            return {**self.snapshot(), "stop_confirmed": confirmed}
 
-    def sensors(self) -> dict[str, Any]:
-        if not self.sensor_hardware:
-            return {
-                "mode": "demo",
-                "distance_cm": 63.4,
-                "line": [False, True, True, False],
-                "line_raw": 6,
-            }
-
+    def sensors(self):
         with self._lock:
-            controller = self._ensure_controller()
-            line = controller.read_line()
-            distance = controller.read_distance_cm()
-            return {
-                "mode": self.state.mode,
-                "distance_cm": distance,
-                "line": [line.x1, line.x2, line.x3, line.x4],
-                "line_raw": line.raw,
-            }
+            if not self.sensor_hardware:
+                return {"mode": "demo", "distance_cm": 63.4,
+                        "line": [False, True, True, False], "line_raw": 6}
+            # Avoid a potentially slow sensor read while a motor pulse is active.
+            if self._active_cancel is not None:
+                raise RuntimeError("이동 중 센서 갱신은 잠시 대기합니다")
+            try:
+                controller = self._ensure_controller()
+                line = controller.read_line()
+                distance = controller.read_distance_cm()
+                if not math.isfinite(distance):
+                    raise ValueError("Invalid distance reading")
+                return {"mode": self.state.mode, "distance_cm": distance,
+                        "line": [line.x1, line.x2, line.x3, line.x4], "line_raw": line.raw}
+            except Exception as exc:
+                self._fault_locked(exc)
+                raise
 
-    def close(self) -> None:
+    def check_watchdog(self):
         with self._lock:
-            if self._controller is not None:
-                self._controller.close()
-                self._controller = None
+            if self.hardware and self._clock() >= self._deadline:
+                self.stop(reason="운전 화면 응답 없음: 자동 정지 및 이동 잠금")
+
+    def start_watchdog(self):
+        if self._watchdog is not None:
+            return
+        def watch():
+            while not self._watchdog_exit.wait(0.1):
+                try:
+                    self.check_watchdog()
+                except Exception:
+                    # stop() has already latched safe state and recorded the error.
+                    pass
+        self._watchdog = threading.Thread(target=watch, name="chan-watchdog", daemon=True)
+        self._watchdog.start()
+
+    def close(self):
+        self._watchdog_exit.set()
+        self._closing = True
+        try:
+            self.stop(reason="서버 종료")
+        finally:
+            with self._lock:
+                self._closing = True
+                controller, self._controller = self._controller, None
                 self.state.connected = False
+                if controller is not None:
+                    controller.close()
+            if self._watchdog is not None and self._watchdog is not threading.current_thread():
+                self._watchdog.join(timeout=1)
 
 
 def build_handler(runtime: ControllerRuntime) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
-        server_version = "ChanController/1.0"
+        server_version = "ChanController/2.0"
+
+        def setup(self):
+            super().setup()
+            self.connection.settimeout(3)
+
+        def _check_write_origin(self):
+            # CSRF mitigation, not authentication. Restrict deployment to trusted networks.
+            origin = self.headers.get("Origin")
+            if self.headers.get("Sec-Fetch-Site") == "cross-site" or (
+                origin and origin != f"http://{self.headers.get('Host')}"
+            ):
+                raise PermissionError("Cross-origin control requests are blocked")
+            if self.headers.get_content_type() != "application/json":
+                raise ValueError("Content-Type must be application/json")
 
         def log_message(self, format_string: str, *args: object) -> None:
             print(f"[web] {self.address_string()} {format_string % args}")
@@ -325,7 +433,7 @@ def build_handler(runtime: ControllerRuntime) -> type[BaseHTTPRequestHandler]:
                     self._send_static(path.removeprefix("/web/"))
                 else:
                     self.send_error(HTTPStatus.NOT_FOUND)
-            except (OSError, RaspbotError, RuntimeError) as exc:
+            except (OSError, RaspbotError, RuntimeError, ValueError) as exc:
                 self._send_json(
                     HTTPStatus.SERVICE_UNAVAILABLE,
                     {"ok": False, "error": str(exc)},
@@ -334,20 +442,26 @@ def build_handler(runtime: ControllerRuntime) -> type[BaseHTTPRequestHandler]:
         def do_POST(self) -> None:  # noqa: N802
             path = urlparse(self.path).path
             try:
+                self._check_write_origin()
                 if path in ("/api/move", "/api/raspbot/move"):
                     payload = self._read_json()
                     result = runtime.move(
                         str(payload.get("action", "")),
-                        int(payload.get("speed", 40)),
-                        float(payload.get("duration", 0.2)),
+                        payload.get("speed", 40),
+                        payload.get("duration", 0.2),
+                        control_token=payload.get("control_token"),
                     )
                 elif path == "/api/raspbot/turn":
                     payload = self._read_json()
                     result = runtime.turn(
                         str(payload.get("direction", "")),
-                        float(payload.get("angle", 45)),
-                        int(payload.get("speed", 40)),
+                        payload.get("angle", 45),
+                        payload.get("speed", 40),
+                        control_token=payload.get("control_token"),
                     )
+                elif path == "/api/raspbot/heartbeat":
+                    payload = self._read_json()
+                    result = runtime.heartbeat(payload.get("control_token"))
                 elif path == "/api/raspbot/mode":
                     payload = self._read_json()
                     result = runtime.set_mode(
@@ -364,7 +478,7 @@ def build_handler(runtime: ControllerRuntime) -> type[BaseHTTPRequestHandler]:
                 self._send_json(
                     HTTPStatus.FORBIDDEN, {"ok": False, "error": str(exc)}
                 )
-            except (ValueError, TypeError, json.JSONDecodeError) as exc:
+            except (ValueError, TypeError, OverflowError, json.JSONDecodeError) as exc:
                 self._send_json(
                     HTTPStatus.BAD_REQUEST, {"ok": False, "error": str(exc)}
                 )
@@ -385,7 +499,7 @@ def main() -> int:
     mode_group.add_argument(
         "--hardware",
         action="store_true",
-        help="enable real I2C motor and sensor access (default: demo mode)",
+        help="legacy alias for sensors-only; UI safety confirmation is required to move",
     )
     mode_group.add_argument(
         "--sensors-only",
@@ -400,7 +514,11 @@ def main() -> int:
     )
     server_class = server_class_for(args.host)
     server = server_class((args.host, args.port), build_handler(runtime))
-    mode = "HARDWARE" if args.hardware else "SENSORS-ONLY" if args.sensors_only else "DEMO"
+    runtime.start_watchdog()
+    def terminate(_signum, _frame):
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, terminate)
+    mode = "SENSORS-ONLY (movement locked)" if args.hardware or args.sensors_only else "DEMO"
     display_host = f"[{args.host}]" if ":" in args.host else args.host
     print(f"CHAN controller: http://{display_host}:{args.port} ({mode})")
     try:
@@ -408,8 +526,10 @@ def main() -> int:
     except KeyboardInterrupt:
         print("\nStopping controller server...")
     finally:
-        runtime.close()
-        server.server_close()
+        try:
+            runtime.close()
+        finally:
+            server.server_close()
     return 0
 
 

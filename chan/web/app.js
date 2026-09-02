@@ -1,355 +1,111 @@
-const state = {
-  speed: 40,
-  duration: 0.2,
-  turnAngle: 45,
-  busy: false,
-  movementEnabled: false,
-  keyboardEnabled: true,
-  mode: "demo",
-  modeSwitchBusy: false,
-};
-
-const labels = {
-  forward: "전진",
-  backward: "후진",
-  turn_left: "좌회전",
-  turn_right: "우회전",
-  strafe_left: "왼쪽 평행이동",
-  strafe_right: "오른쪽 평행이동",
-  stop: "정지",
-};
-
-const keyMap = {
-  ArrowUp: "forward",
-  ArrowDown: "backward",
-  ArrowLeft: "turn_left",
-  ArrowRight: "turn_right",
-  KeyW: "forward",
-  KeyS: "backward",
-  KeyA: "turn_left",
-  KeyD: "turn_right",
-  KeyQ: "strafe_left",
-  KeyE: "strafe_right",
-};
+import { ControlClient } from './control-client.mjs';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+const state = { speed: 40, duration: 0.2, keyboardEnabled: true, status: {} };
+const labels = { forward: '전진', backward: '후진', turn_left: '좌회전', turn_right: '우회전', strafe_left: '왼쪽 평행이동', strafe_right: '오른쪽 평행이동', stop: '정지' };
+const keyMap = { ArrowUp: 'forward', ArrowDown: 'backward', ArrowLeft: 'turn_left', ArrowRight: 'turn_right', KeyW: 'forward', KeyS: 'backward', KeyA: 'turn_left', KeyD: 'turn_right', KeyQ: 'strafe_left', KeyE: 'strafe_right' };
 
-async function request(path, options = {}) {
-  const response = await fetch(path, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  const payload = await response.json();
-  if (!response.ok || payload.ok === false) {
-    throw new Error(payload.error || `HTTP ${response.status}`);
-  }
-  return payload;
-}
-
-function showToast(message, error = false) {
-  const toast = $("#toast");
-  toast.textContent = message;
-  toast.classList.toggle("error", error);
-  toast.classList.add("show");
+function showToast(message) {
+  $('#toast').textContent = message;
+  $('#toast').classList.add('show');
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
+  showToast.timer = setTimeout(() => $('#toast').classList.remove('show'), 2500);
 }
-
-function setActivity(title, message) {
-  $("#activity-title").textContent = title;
-  $("#activity-message").textContent = message;
-  $("#activity-time").textContent = new Date().toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function renderKeyboardSetting() {
-  const toggle = $("#keyboard-toggle");
-  toggle.setAttribute("aria-pressed", String(state.keyboardEnabled));
-  toggle.classList.toggle("active", state.keyboardEnabled);
-  $("#keyboard-state").textContent = state.keyboardEnabled ? "ON" : "OFF";
-  $("#keyboard-toggle-label").textContent = state.keyboardEnabled
-    ? "키보드 리모컨 켜짐"
-    : "키보드 리모컨 꺼짐";
-}
-
 function renderModeControls() {
-  const safetyChecked = $("#hardware-safety-check").checked;
-  const safeButton = $("#safe-mode-button");
-  const hardwareButton = $("#hardware-mode-button");
-  const safeActive = state.mode === "sensors";
-  const hardwareActive = state.mode === "hardware";
-
-  safeButton.classList.toggle("active", safeActive);
-  hardwareButton.classList.toggle("active", hardwareActive);
-  safeButton.setAttribute("aria-pressed", String(safeActive));
-  hardwareButton.setAttribute("aria-pressed", String(hardwareActive));
-  safeButton.disabled = state.modeSwitchBusy || safeActive;
-  hardwareButton.disabled = state.modeSwitchBusy || hardwareActive || !safetyChecked;
+  const status = state.status;
+  $('#safe-mode-button').disabled = false;
+  $('#safe-mode-button').classList.toggle('active', !status.movement_enabled);
+  $('#hardware-mode-button').classList.toggle('active', !!status.movement_enabled);
+  $('#hardware-mode-button').disabled = !status.online || status.client_busy || status.movement_enabled || !$('#hardware-safety-check').checked;
+  $$('.drive-button[data-action]').forEach((button) => { button.disabled = !status.movement_enabled || status.client_busy; });
 }
-
-function renderStatus(status) {
-  const online = $("#connection-pill");
-  online.classList.add("online");
-  state.mode = status.mode || "demo";
-  state.movementEnabled = Boolean(status.movement_enabled);
-  $("#connection-text").textContent = status.movement_enabled
-    ? "Raspbot 실기 모드"
-    : status.sensors_enabled
-      ? "Raspbot 연결 · 이동 잠금"
-      : "서버 연결 · 데모";
-  const commandLabel = labels[status.last_action] || status.last_action;
-  $("#last-command").textContent = status.last_angle == null
-    ? commandLabel
-    : `${commandLabel} ${Number(status.last_angle).toFixed(0)}° (예상)`;
-  $("#command-count").textContent = `총 ${status.command_count}회`;
-
-  if (status.hardware_enabled) {
-    $("#safety-banner").classList.add("hardware");
-    $("#mode-title").textContent = "실제 하드웨어 모드";
-    $("#mode-description").textContent = "버튼을 누르면 Raspbot이 짧게 움직입니다. 주변을 비워주세요.";
-  } else if (status.sensors_enabled) {
-    $("#safety-banner").classList.remove("hardware");
-    $("#mode-title").textContent = "센서 점검 모드 · 이동 잠금";
-    $("#mode-description").textContent = "실제 센서를 읽고 있지만 모든 바퀴 이동 명령은 차단되어 있습니다.";
-  } else {
-    $("#safety-banner").classList.remove("hardware");
-    $("#mode-title").textContent = "데모 모드";
-    $("#mode-description").textContent = "서버만 실행 중이며 실제 Raspbot 연결은 사용하지 않습니다.";
-  }
-
+const client = new ControlClient('/api/raspbot', (status) => {
+  if (state.status.movement_enabled && !status.movement_enabled) $('#hardware-safety-check').checked = false;
+  state.status = status;
+  $('#connection-pill').classList.toggle('online', !!status.online);
+  $('#connection-text').textContent = status.online ? '서버 연결됨' : '연결 미확인 · 이동 잠금';
+  $('#last-command').textContent = labels[status.last_action] || '정지';
+  $('#command-count').textContent = `총 ${status.command_count || 0}회`;
+  $('#safety-banner').classList.toggle('hardware', !!status.movement_enabled);
+  $('#mode-title').textContent = status.movement_enabled ? '실기모드 · 이 화면에서 운전 가능' : '이동 잠금';
+  $('#mode-description').textContent = status.message;
+  $('#activity-title').textContent = status.client_busy ? '명령 처리 중' : '제어 상태';
+  $('#activity-message').textContent = status.message;
+  $('#activity-time').textContent = new Date().toLocaleTimeString('ko-KR');
   renderModeControls();
-
-  $$(".drive-button[data-action]").forEach((button) => {
-    button.disabled = !state.movementEnabled;
-  });
-}
-
-async function setControllerMode(mode) {
-  if (state.modeSwitchBusy) return;
-  const hardwareRequested = mode === "hardware";
-  const safetyCheck = $("#hardware-safety-check");
-  if (hardwareRequested && !safetyCheck.checked) {
-    showToast("주변 안전 확인을 먼저 체크하세요.", true);
-    return;
-  }
-
-  state.modeSwitchBusy = true;
-  renderModeControls();
-  setActivity(
-    hardwareRequested ? "실기모드 전환 중" : "안전모드 전환 중",
-    "먼저 모든 바퀴에 정지 명령을 보내고 연결을 확인합니다.",
-  );
-  try {
-    const result = await request("/api/raspbot/mode", {
-      method: "POST",
-      body: JSON.stringify({ mode, confirm_safe: hardwareRequested }),
-    });
-    renderStatus(result);
-    if (hardwareRequested) {
-      safetyCheck.checked = false;
-      showToast("실기모드로 전환했습니다. 짧게 시험 운전하세요.");
-      setActivity("실기모드", "화면 버튼과 키보드로 실제 바퀴를 제어할 수 있습니다.");
-    } else {
-      showToast("안전모드로 전환하고 모터를 정지했습니다.");
-      setActivity("안전모드", "센서만 사용하며 모든 이동 명령은 잠겨 있습니다.");
-    }
-  } catch (error) {
-    showToast(`모드 전환 실패: ${error.message}`, true);
-    setActivity("모드 전환 실패", error.message);
-  } finally {
-    state.modeSwitchBusy = false;
-    renderModeControls();
-  }
-}
-
-async function fetchStatus() {
-  try {
-    renderStatus(await request("/api/status"));
-  } catch (error) {
-    $("#connection-pill").classList.remove("online");
-    $("#connection-text").textContent = "서버 연결 끊김";
-    setActivity("연결 오류", error.message);
-  }
-}
+});
 
 async function fetchSensors() {
+  if (state.status.client_busy || state.status.movement_enabled || !state.status.online) return;
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), 2500);
   try {
-    const sensors = await request("/api/raspbot/sensors");
-    $("#distance-value").textContent = Number(sensors.distance_cm).toFixed(1);
-    $$("#sensor-array span").forEach((element, index) => {
-      element.classList.toggle("on", Boolean(sensors.line[index]));
-    });
+    const response = await fetch('/api/raspbot/sensors', { cache: 'no-store', signal: abort.signal });
+    const sensors = await response.json();
+    if (!response.ok) throw new Error(sensors.error || '센서 응답 오류');
+    $('#distance-value').textContent = Number(sensors.distance_cm).toFixed(1);
+    $$('#sensor-array span').forEach((el, i) => el.classList.toggle('on', !!sensors.line[i]));
   } catch (error) {
-    showToast(`센서 오류: ${error.message}`, true);
-    setActivity("센서 확인 실패", error.message);
-  }
+    $('#distance-value').textContent = '—';
+    $$('#sensor-array span').forEach((el) => el.classList.remove('on'));
+    showToast(`센서 확인 실패: ${error.message}`);
+  } finally { clearTimeout(timer); }
 }
-
-async function move(action, sourceButton = null) {
-  if (!state.movementEnabled) {
-    showToast("현재는 센서 점검 모드라 이동이 잠겨 있습니다.", true);
-    return;
-  }
-  if (state.busy) return;
-  state.busy = true;
-  sourceButton?.classList.add("active");
-  setActivity(`${labels[action]} 명령`, `속도 ${state.speed}, ${state.duration.toFixed(1)}초`);
-  try {
-    const result = await request("/api/raspbot/move", {
-      method: "POST",
-      body: JSON.stringify({ action, speed: state.speed, duration: state.duration }),
-    });
-    renderStatus(result);
-    showToast(`${labels[action]} 완료 · 자동 정지`);
-  } catch (error) {
-    showToast(`이동 실패: ${error.message}`, true);
-    setActivity("이동 명령 실패", error.message);
-  } finally {
-    sourceButton?.classList.remove("active");
-    state.busy = false;
-  }
+function drive(action) {
+  if (action === 'turn_left' || action === 'turn_right') {
+    const angle = Number($('#turn-angle').value);
+    if (!Number.isFinite(angle) || angle < 1 || angle > 180) { showToast('회전각을 1~180°로 입력하세요.'); return; }
+    void client.motion('turn', { direction: action === 'turn_left' ? 'left' : 'right', angle, speed: state.speed });
+  } else void client.motion('move', { action, speed: state.speed, duration: state.duration });
 }
-
-async function turn(action, sourceButton = null) {
-  if (!state.movementEnabled) {
-    showToast("각도는 입력할 수 있지만 현재 이동은 잠겨 있습니다.", true);
-    return;
-  }
-  const angleInput = $("#turn-angle");
-  const angle = Number(angleInput.value);
-  if (!Number.isFinite(angle) || angle < 1 || angle > 180) {
-    showToast("회전각을 1~180° 사이로 입력하세요.", true);
-    angleInput.focus();
-    return;
-  }
-  if (state.busy) return;
-  state.busy = true;
-  sourceButton?.classList.add("active");
-  const direction = action === "turn_left" ? "left" : "right";
-  setActivity(`${labels[action]} ${angle}°`, "시간 기반 예상 회전 · 완료 후 자동 정지");
-  try {
-    const result = await request("/api/raspbot/turn", {
-      method: "POST",
-      body: JSON.stringify({ direction, angle, speed: state.speed }),
-    });
-    renderStatus(result);
-    showToast(`${labels[action]} ${angle}° 완료 · 자동 정지`);
-  } catch (error) {
-    showToast(`회전 실패: ${error.message}`, true);
-    setActivity("회전 명령 실패", error.message);
-  } finally {
-    sourceButton?.classList.remove("active");
-    state.busy = false;
-  }
+function renderKeyboardSetting() {
+  $('#keyboard-toggle').setAttribute('aria-pressed', String(state.keyboardEnabled));
+  $('#keyboard-toggle').classList.toggle('active', state.keyboardEnabled);
+  $('#keyboard-state').textContent = state.keyboardEnabled ? 'ON' : 'OFF';
+  $('#keyboard-toggle-label').textContent = state.keyboardEnabled ? '키보드 리모컨 켜짐' : '키보드 리모컨 꺼짐';
 }
-
-async function stop() {
-  try {
-    const result = await request("/api/raspbot/stop", { method: "POST", body: "{}" });
-    renderStatus(result);
-    showToast("모든 모터 정지");
-    setActivity("비상 정지", "모든 바퀴에 정지 명령을 전송했습니다.");
-  } catch (error) {
-    showToast(`정지 실패: ${error.message}`, true);
-    setActivity("정지 명령 실패", error.message);
-  }
-}
-
-function bindControls() {
-  $$(".mode-tab").forEach((tabButton) => {
-    tabButton.addEventListener("click", () => {
-      const target = tabButton.dataset.viewTarget;
-      $$(".mode-tab").forEach((item) => item.classList.toggle("active", item === tabButton));
-      $$(".view-panel").forEach((panel) => {
-        panel.hidden = panel.dataset.view !== target;
-      });
-    });
-  });
-
-  $$(".drive-button[data-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const action = button.dataset.action;
-      if (action === "turn_left" || action === "turn_right") {
-        turn(action, button);
-      } else {
-        move(action, button);
-      }
-    });
-  });
-  $("#stop-button").addEventListener("click", stop);
-  $("#refresh-sensors").addEventListener("click", fetchSensors);
-  $("#keyboard-toggle").addEventListener("click", () => {
-    state.keyboardEnabled = !state.keyboardEnabled;
-    renderKeyboardSetting();
-    showToast(
-      state.keyboardEnabled
-        ? "키보드 리모컨을 켰습니다."
-        : "키보드 리모컨을 껐습니다. 화면 버튼은 계속 사용할 수 있습니다.",
-    );
-  });
-  $("#hardware-safety-check").addEventListener("change", renderModeControls);
-  $("#safe-mode-button").addEventListener("click", () => setControllerMode("safe"));
-  $("#hardware-mode-button").addEventListener("click", () => setControllerMode("hardware"));
-
-  const slider = $("#speed-slider");
-  slider.addEventListener("input", () => {
-    state.speed = Number(slider.value);
-    $("#speed-value").textContent = state.speed;
-  });
-
-  const turnAngle = $("#turn-angle");
-  turnAngle.addEventListener("input", () => {
-    const value = Number(turnAngle.value);
-    if (Number.isFinite(value)) state.turnAngle = value;
-  });
-  turnAngle.addEventListener("blur", () => {
-    const value = Math.min(180, Math.max(1, Number(turnAngle.value) || 45));
-    state.turnAngle = value;
-    turnAngle.value = String(value);
-  });
-
-  $$("[data-duration]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.duration = Number(button.dataset.duration);
-      $("#pulse-value").textContent = state.duration.toFixed(1);
-      $$("[data-duration]").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-    });
-  });
-
-  window.addEventListener("keydown", (event) => {
-    const isTyping = event.target.matches(
-      'input, textarea, select, [contenteditable="true"]',
-    );
-    if (event.repeat || isTyping) return;
-    if (event.code === "Space") {
-      event.preventDefault();
-      stop();
-      return;
-    }
-    const action = keyMap[event.code];
-    if (!action) return;
-    event.preventDefault();
-    if (!state.keyboardEnabled) {
-      showToast("키보드 리모컨이 꺼져 있습니다.", true);
-      return;
-    }
-    const button = $(`[data-action="${action}"]`);
-    if (action === "turn_left" || action === "turn_right") {
-      turn(action, button);
-    } else {
-      move(action, button);
-    }
-  });
-}
-
-bindControls();
+$$('.mode-tab').forEach((button) => button.addEventListener('click', () => {
+  client.suspend();
+  $$('.mode-tab').forEach((el) => el.classList.toggle('active', el === button));
+  $$('.view-panel').forEach((panel) => { panel.hidden = panel.dataset.view !== button.dataset.viewTarget; });
+}));
+$$('.drive-button[data-action]').forEach((button) => button.addEventListener('click', () => drive(button.dataset.action)));
+$('#stop-button').addEventListener('click', () => { $('#hardware-safety-check').checked = false; void client.stop(); });
+$('#safe-mode-button').addEventListener('click', () => { $('#hardware-safety-check').checked = false; void client.stop(); });
+$('#hardware-mode-button').addEventListener('click', () => {
+  void client.arm($('#hardware-safety-check').checked);
+  $('#hardware-safety-check').checked = false;
+});
+$('#hardware-safety-check').addEventListener('change', renderModeControls);
+$('#refresh-sensors').addEventListener('click', fetchSensors);
+$('#keyboard-toggle').addEventListener('click', () => {
+  state.keyboardEnabled = !state.keyboardEnabled;
+  if (!state.keyboardEnabled) client.suspend();
+  renderKeyboardSetting();
+});
+$('#speed-slider').addEventListener('input', (event) => {
+  state.speed = Number(event.target.value);
+  $('#speed-value').textContent = String(state.speed);
+});
+$$('[data-duration]').forEach((button) => button.addEventListener('click', () => {
+  state.duration = Number(button.dataset.duration);
+  $('#pulse-value').textContent = state.duration.toFixed(1);
+  $$('[data-duration]').forEach((el) => el.classList.toggle('active', el === button));
+}));
+window.addEventListener('keydown', (event) => {
+  if (event.repeat) return;
+  if (event.code === 'Escape') { event.preventDefault(); void client.stop(); return; }
+  if (event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable]')) return;
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.code === 'Space') { event.preventDefault(); void client.stop(); return; }
+  if (state.keyboardEnabled && keyMap[event.code]) { event.preventDefault(); drive(keyMap[event.code]); }
+});
+window.addEventListener('blur', () => client.suspend());
+window.addEventListener('pagehide', () => client.suspend());
+document.addEventListener('visibilitychange', () => { if (document.hidden) client.suspend(); });
 renderKeyboardSetting();
 renderModeControls();
-fetchStatus();
-fetchSensors();
-setInterval(fetchStatus, 3000);
+void client.refresh();
+setInterval(() => { void client.tick(); }, 1000);
 setInterval(fetchSensors, 5000);

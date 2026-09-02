@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+  <title id="title">CARE-PACK · Everyday readiness, assisted.</title>
+  <desc id="desc">예선 프로토타입. 계획, 이동, 적재, 확인을 연결하는 생활 보조 로봇 프로젝트.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0f2636"/><stop offset="1" stop-color="#1b424c"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#90b6b4" stroke-opacity=".08"/></pattern>
+  </defs>
+  <rect width="1200" height="380" rx="24" fill="url(#bg)"/>
+  <rect width="1200" height="380" rx="24" fill="url(#grid)"/>
+  <circle cx="1060" cy="60" r="190" fill="#65d6bb" opacity=".07"/>
+  <g font-family="Arial, sans-serif">
+    <rect x="54" y="44" width="288" height="30" rx="15" fill="#365b61"/>
+    <text x="70" y="64" font-size="12" letter-spacing="1.8" fill="#b9f5e5">2026 ESW · PRELIMINARY PROTOTYPE</text>
+    <text x="52" y="155" font-size="72" font-weight="700" letter-spacing="-3" fill="#f8faf9">CARE-PACK</text>
+    <text x="57" y="199" font-size="22" fill="#afd3d1">Everyday readiness, assisted.</text>
+    <path d="M57 236H576" stroke="#507079"/>
+    <text x="57" y="273" font-size="14" letter-spacing="2" fill="#b9f5e5">PLAN</text>
+    <text x="141" y="273" font-size="18" fill="#688f96">→</text>
+    <text x="184" y="273" font-size="14" letter-spacing="2" fill="#b9f5e5">NAVIGATE</text>
+    <text x="304" y="273" font-size="18" fill="#688f96">→</text>
+    <text x="348" y="273" font-size="14" letter-spacing="2" fill="#b9f5e5">PACK</text>
+    <text x="430" y="273" font-size="18" fill="#688f96">→</text>
+    <text x="478" y="273" font-size="14" letter-spacing="2" fill="#ffc99b">VERIFY</text>
+    <text x="57" y="324" font-size="12" fill="#8bafb4">MANUAL CONTROL + SIMULATION · HARDWARE AUTONOMY IN DEVELOPMENT</text>
+  </g>
+  <g transform="translate(740 68)" fill="none" stroke-linejoin="round">
+    <rect x="122" y="51" width="184" height="192" rx="28" fill="#244f59" stroke="#5b8590" stroke-width="2"/>
+    <path d="M170 60V38a44 44 0 0 1 88 0v22" stroke="#8cc7c3" stroke-width="12"/>
+    <rect x="157" y="129" width="113" height="73" rx="15" stroke="#8cc7c3" stroke-width="2"/>
+    <path d="m191 162 17 17 29-34" stroke="#b9f5e5" stroke-width="7"/>
+    <path d="M8 207h61v-37l50-49 30 24" stroke="#f4bc92" stroke-width="17"/>
+    <circle cx="69" cy="171" r="14" fill="#15333f" stroke="#f4bc92" stroke-width="6"/>
+    <circle cx="119" cy="121" r="12" fill="#15333f" stroke="#f4bc92" stroke-width="5"/>
+    <path d="m143 136 17 17-8 16m8-16 16-4" stroke="#f4bc92" stroke-width="6"/>
+    <rect x="-6" y="215" width="106" height="34" rx="11" fill="#315d67" stroke="#8cc7c3" stroke-width="2"/>
+    <circle cx="14" cy="255" r="12" fill="#15333f" stroke="#8cc7c3" stroke-width="4"/>
+    <circle cx="79" cy="255" r="12" fill="#15333f" stroke="#8cc7c3" stroke-width="4"/>
+  </g>
+</svg>

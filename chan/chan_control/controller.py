@@ -86,13 +86,22 @@ class RaspbotController:
                 f"duration must be greater than 0 and at most {self.limits.max_duration}"
             )
 
-        self.connect()
-        move = getattr(self.robot.motors, motion.value)
         try:
-            move(speed=speed)
+            self.start_motion(motion, speed=speed)
             self._sleep(duration)
         finally:
-            self.robot.motors.stop()
+            self.stop()
+
+    def start_motion(self, motion: Motion | str, *, speed: int) -> None:
+        """Start a motor command; server owns its cancellable wait and STOP.
+
+        Do not call this directly from applications: use pulse() or the server.
+        """
+        motion = Motion(motion)
+        if not 1 <= speed <= self.limits.max_speed:
+            raise ValueError("speed is outside safety limits")
+        self.connect()
+        getattr(self.robot.motors, motion.value)(speed=speed)
 
     def stop(self) -> None:
         """Stop all four motors if a connection is open."""
