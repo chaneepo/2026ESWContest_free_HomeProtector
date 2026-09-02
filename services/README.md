@@ -21,4 +21,4 @@
 
 ## 알아둘 점
 
-현재 팔 서비스의 `SUCCESS`는 지연 후 반환하는 시뮬레이션입니다. `armApiContract`의 경로 목록도 구현된 HTTP 라우트 목록이 아닙니다. 실기 라즈봇은 [장치 API](../app/api/device/raspbot/README.md)를 사용합니다.
+팔 서비스는 지연 후 `SUCCESS`를 반환해 UI 작업 흐름을 시뮬레이션합니다. `armApiContract`는 향후 서버 연동에 사용할 경로 설계입니다. 실기 라즈봇은 [장치 API](../app/api/device/raspbot/README.md)를 사용합니다.

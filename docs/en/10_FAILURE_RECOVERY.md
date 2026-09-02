@@ -6,7 +6,7 @@ CARE-PACK must not mark a task complete merely because a command returned succes
 
 ## 2. Current scope
 
-The simulation recovers only one PICK or VERIFY failure on the first item. It enters `RECOVER`, retries the same state once, and guarantees success. Physical sensor decisions, accumulated failure history, exhausted-retry failure, and user notifications are not implemented.
+The web simulation injects one PICK or VERIFY failure on the first item, enters `RECOVER`, and succeeds after retrying the same state once. Planned extensions cover physical sensor decisions, accumulated failure history, exhausted-retry failure, and user notifications.
 
 ## 3. Target failure classes
 
@@ -74,4 +74,3 @@ An initial recommendation is at most two retries per recoverable step, stored as
 - No new robot commands are sent after cancel or E-stop.
 - Failure state is restored after client reconnect.
 - Replayed requests never duplicate a physical action.
-

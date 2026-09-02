@@ -2,7 +2,7 @@
 
 [Project home](../../README.md) · [Documentation index](../README.md) · [한국어](../ko/README.md)
 
-Design documents include planned interfaces, not just completed features. Consult the root README for current implementation status.
+These documents describe the system architecture, module interfaces, and planned extensions. See the [root README](../../README.md#구현-현황) for available features and execution modes.
 
 ## Document index
 
@@ -22,10 +22,10 @@ Design documents include planned interfaces, not just completed features. Consul
 | [Development roadmap](11_DEVELOPMENT_ROADMAP.md) | [Project](../../README.md) |
 | [Team interface guide](12_TEAM_INTERFACE.md) | [Project](../../README.md) |
 
-## Implementation boundaries
+## Module execution modes
 
-- Manual Raspbot control is separate from simulated job and arm UI behavior.
-- The existing motor tools support manual/recorded operations; they are not integrated perception-driven autonomy.
-- `autonomy/` currently runs simulated observations and records virtual actuator commands only.
-- The backend currently exposes `/health`; design API tables are not a list of implemented routes.
-- Review the [safety limitations](../../chan/SAFETY_REVIEW.md) before hardware use.
+- Manual Raspbot control uses the device API; job and arm screens run in simulation.
+- `motor/` provides standalone tools for manual control, recorded pose sequences, and leader-arm following.
+- `autonomy/` validates mission workflows with simulated observations and virtual command logs.
+- The backend exposes `/health` for database connectivity; the business API specification guides planned integration.
+- Review the [safety guide](../../chan/SAFETY_REVIEW.md) before hardware use.

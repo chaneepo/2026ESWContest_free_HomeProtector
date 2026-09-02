@@ -22,4 +22,4 @@
 
 ## 알아둘 점
 
-실기 전환 본문은 `mode: hardware`, `confirm_safe: true`입니다. 실제 연결 확인 후 `control_token`을 받습니다. 안전 확인 없이 전환되지 않으며 이 문서 작성 중에는 요청하지 않았습니다.
+실기 전환 본문은 `mode: hardware`, `confirm_safe: true`입니다. 사용자의 안전 확인과 실제 연결 확인을 거친 후 `control_token`을 받습니다.

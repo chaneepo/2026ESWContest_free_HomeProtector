@@ -17,4 +17,4 @@
 
 ## 알아둘 점
 
-임의 좌표·가상 상태·성공 결과는 실측이 아닙니다. 별도 Python [autonomy](../autonomy/README.md)와 자동으로 연결되지는 않습니다.
+화면용 가상 좌표·상태·성공 결과를 생성합니다. 웹 시뮬레이터와 Python [autonomy](../autonomy/README.md)는 각각 독립적으로 실행합니다.

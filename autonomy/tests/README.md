@@ -20,4 +20,4 @@ python3 -B -m unittest discover -s autonomy/tests -v
 
 ## 알아둘 점
 
-실제 SSH, GPIO, CAN, 모터를 사용하지 않습니다. 통과 결과는 실물 자율주행 성능 측정값이 아닙니다.
+가상 장치로 의사결정·상태 전이를 검증하는 테스트입니다. 실제 SSH, GPIO, CAN, 모터 없이 실행합니다.

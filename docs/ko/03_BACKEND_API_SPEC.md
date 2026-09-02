@@ -2,7 +2,7 @@
 
 ## 1. 상태와 범위
 
-현재 저장소에는 FastAPI 서버 기반, PostgreSQL 세션과 `GET /health`가 구현되어 있다. 아래 업무 API는 모두 **계획된 계약**이며 `services/*.ts`는 아직 메모리 mock을 사용한다. 실제 구현 시 `/api/v1` 버전 경로와 JSON을 사용하고 장치 호출은 인증된 내부 서비스만 허용한다.
+FastAPI 서버 기반, PostgreSQL 세션과 `GET /health`를 제공한다. 아래 업무 API는 모두 **계획된 계약**이며 `services/*.ts`는 메모리 mock으로 화면 흐름을 제공한다. 실제 구현 시 `/api/v1` 버전 경로와 JSON을 사용하고 장치 호출은 인증된 내부 서비스만 허용한다.
 
 ## 2. 공통 규칙
 
@@ -52,7 +52,7 @@
 | 계획 | POST | `/api/v1/arm/stop` | 로봇 즉시 중지 요청 |
 | 계획 | GET | `/api/v1/events` | 이벤트 필터 조회 |
 
-`services/armService.ts`에 적힌 `/api/arm/*` 경로는 프론트엔드에 표시하기 위한 초안이며 실제 서버 라우트가 아니다. 서버 구현 시 위 버전 경로로 통일하거나 호환 정책을 명시해야 한다.
+`services/armService.ts`의 `/api/arm/*`는 프론트엔드에 표시하는 인터페이스 설계다. 서버 연동 단계에서 위 버전 경로로 통일하거나 호환 정책을 명시한다.
 
 ## 4. 시스템 API
 
@@ -175,4 +175,4 @@
 
 ## 9. 이벤트 API와 실시간 갱신
 
-`GET /events?jobId=job-001&level=ERROR&source=ARM&cursor=...`는 이벤트 배열과 다음 cursor를 반환한다. 실시간 전송은 향후 `/ws/system` WebSocket 또는 SSE로 설계할 수 있으나 현재 구현되지 않았다. 전송 페이로드는 [이벤트 로그 명세](09_EVENT_LOG_SPEC.md)의 표준 스키마를 재사용한다.
+`GET /events?jobId=job-001&level=ERROR&source=ARM&cursor=...`는 이벤트 배열과 다음 cursor를 반환하는 계약이다. 실시간 전송은 `/ws/system` WebSocket 또는 SSE를 사용하는 확장 계획이다. 전송 페이로드는 [이벤트 로그 명세](09_EVENT_LOG_SPEC.md)의 표준 스키마를 재사용한다.

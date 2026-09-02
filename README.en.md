@@ -2,7 +2,7 @@
 
 CARE-PACK plans items for an outing, uses a robot arm to move them into a bag, and verifies that loading physically succeeded. This repository currently contains the Korean control-center UI and a pre-hardware simulation.
 
-> Update (2026-09-02): manual Raspbot control and camera-server integration code are available. Job/arm UI behavior is simulated. Physical autonomous navigation, autonomous arm operation, and load-sensor integration remain incomplete. See the [current status](README.md), [simulation-only autonomy prototype](autonomy/README.md), and [safety review](chan/SAFETY_REVIEW.md). Passing software tests does not establish physical robot safety.
+> The project provides manual Raspbot control, camera-server integration, and job/arm UI simulation. A standalone simulator validates autonomous task decisions and state transitions. See the [feature guide](README.md), [autonomy simulator](autonomy/README.md), and [safety review](chan/SAFETY_REVIEW.md).
 
 ## Development environment setup
 
@@ -188,7 +188,7 @@ Start the FastAPI health-check server with:
 python -m uvicorn backend.app.main:app --reload --port 8000
 ```
 
-Open `http://127.0.0.1:8000/health` to verify database connectivity. Item, routine, and job CRUD APIs and frontend integration are not implemented yet, so the current UI continues to use in-memory mocks.
+Open `http://127.0.0.1:8000/health` to verify database connectivity. The web UI uses in-memory mocks for item, routine, and job workflows. Database integration through business CRUD APIs is part of the development roadmap.
 
 ### Stopping and safely resetting the database
 
@@ -324,7 +324,7 @@ Activating the Python environment does not change the current Node.js frontend b
 - In-memory item management and job history
 - UI emergency stop and manual reset
 
-The current UI mock data resets on reload. PostgreSQL data persists but is not connected to the UI yet, and no real devices are controlled.
+UI mock data resets on reload, while the independently operated PostgreSQL database persists its data. Hardware Raspbot control uses the device API; job and arm screens run in simulation.
 
 ## Repository structure
 

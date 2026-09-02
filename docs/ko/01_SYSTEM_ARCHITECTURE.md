@@ -48,7 +48,7 @@ flowchart TD
     EVENTS --> WEB
 ```
 
-DB 계층과 FastAPI 상태 확인은 구현되었지만 업무 API, Core와 장치 어댑터 연결은 아직 목표 구조다.
+DB 계층과 FastAPI 상태 확인을 제공하며, 업무 API·Core·장치 어댑터 연결은 아래 목표 구조에 따라 확장할 계획이다.
 
 ## 4. 계층별 책임
 

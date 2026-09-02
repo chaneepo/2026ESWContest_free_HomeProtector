@@ -24,4 +24,4 @@
 
 ## 알아둘 점
 
-`main.py`는 `/health`만 노출합니다. `services.py`는 내부 함수이며 해당 함수가 모두 REST 경로로 등록된 것은 아닙니다.
+`main.py`는 DB 상태 확인용 `/health`를 제공합니다. `services.py`의 도메인 함수는 Python 내부 호출용이며, 업무 REST API 확장의 기반으로 사용합니다.
