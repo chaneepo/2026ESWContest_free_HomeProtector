@@ -1,0 +1,8 @@
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: car_key
+  1: lip_balm
+  2: watch

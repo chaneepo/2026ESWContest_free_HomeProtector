@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local caches and application settings
+.cache/
+.tmp/
+Ultralytics/
+
+# Generated datasets and training outputs
+runs/
+sam2_labels/
+yolo_dataset/images/
+yolo_dataset/labels/
+
+# Raw media
+videos/
+*.avi
+*.mov
+*.mp4
+
+# Downloaded or intermediate weights
+*.pt
+!best.pt
+weights/
+
+# Legacy/local experiments
+yolo/

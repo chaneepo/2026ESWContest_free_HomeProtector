@@ -27,6 +27,7 @@
 | **[views](views/)** | [Page Docs](views/README.md) | 미지정 | 대시보드·자동 작업·수동 제어·비전·물품·이력 |
 | **[chan](chan/)** | [Raspbot Docs](chan/README.md) | 미지정 | Pi 제어 서버·I2C 래퍼·전용 UI·안전 테스트 |
 | **[motor](motor/)** | [Motor & Arm Docs](motor/README.md) | 미지정 | SO-ARM101 Studio·ESP32 모터 제어·털기 시퀀스 |
+| **[vision](vision/)** | [Vision Training Docs](vision/README.md) | 미지정 | SAM2 자동 라벨링 → YOLO segmentation 학습, car_key·lip_balm·watch 인식 모델 |
 | **[autonomy](autonomy/)** | [Autonomy Docs](autonomy/README.md) | 미지정 | 자율 작업 흐름·라인 판단·실패 처리 시뮬레이션 |
 | **[backend](backend/)** | [Backend Docs](backend/README.md) | 미지정 | FastAPI 상태 확인·DB 모델·서비스·마이그레이션 |
 | **[lib](lib/)** | [Device Proxy Docs](lib/README.md) | 미지정 | 라즈봇·카메라 연결과 서버 측 요청 중계 |
@@ -67,6 +68,7 @@ CARE-PACK은 사용자의 준비물 목록을 바탕으로 **물품 인식 → �
 | 안전 제어 | 제어 서버·클라이언트 | 기본 이동 잠금, STOP 우선 처리, 운전 권한 만료, 통신 감시 |
 | 카메라·YOLO 화면 | 카메라 서버 연동 | 별도 카메라 서버의 상태·MJPEG 영상 연결 |
 | 팔·모터 제어 도구 | 독립 프로그램 | SO-ARM101 수동·고정 시퀀스·리더암 추종, ESP32 털기 도구 |
+| 물품 인식 모델 학습 | 독립 파이프라인 | SAM2 자동 라벨링 → YOLO segmentation, car_key·lip_balm·watch 3종 학습(872장) |
 | 작업 상태 전이·팔 UI | 시뮬레이션 | 계획·집기·이동·놓기·검증, 실패 복구 연출 |
 | 라즈봇 자율주행 판단 | Python 시뮬레이션 | 라인 기반 방향 판단, 장애물·센서 유효성 검사 |
 | 로봇팔 자율 작업 흐름 | Python 시뮬레이션 | 도킹 확인 후 집기·놓기, 파지 실패 시 1회 재시도 |
