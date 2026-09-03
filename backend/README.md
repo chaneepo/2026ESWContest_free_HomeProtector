@@ -16,10 +16,10 @@ FastAPI 상태 확인, SQLAlchemy 모델·서비스와 Alembic 마이그레이�
 
 ## 사용 방법
 
-저장소 루트에서 Python 가상환경에 `requirements-dev.txt`를 설치하고 `.env.example`을 참고해 `.env`를 준비합니다. DB를 준비한 뒤 실행합니다.
+저장소 루트에서 Python 가상환경에 `requirements/requirements-dev.txt`를 설치하고 `.env.example`을 참고해 `.env`를 준비합니다. DB를 준비한 뒤 실행합니다.
 
 ```bash
-docker compose up -d db
+docker compose --project-directory . -f infra/compose.yaml up -d db
 python -m alembic -c backend/alembic.ini upgrade head
 python -m backend.app.seed
 python -m uvicorn backend.app.main:app --reload --port 8000

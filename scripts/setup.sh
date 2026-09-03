@@ -40,7 +40,7 @@ fi
 
 echo "[CARE-PACK] 3/3 Python 개발 패키지를 설치합니다."
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pip install -r requirements/requirements-dev.txt
 
 echo
 echo "[CARE-PACK] 환경 설정이 완료되었습니다."

@@ -62,7 +62,7 @@ if (-not (Test-Path $VenvPython)) {
 Write-Host "[CARE-PACK] 3/3 Python 개발 패키지를 설치합니다."
 & $VenvPython -m pip install --upgrade pip
 Assert-LastExitCode "pip 업그레이드"
-& $VenvPython -m pip install -r requirements-dev.txt
+& $VenvPython -m pip install -r requirements/requirements-dev.txt
 Assert-LastExitCode "Python 패키지 설치"
 
 Write-Host ""

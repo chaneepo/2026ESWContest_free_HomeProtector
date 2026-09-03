@@ -42,7 +42,7 @@ macOS/Linux에서는 다음 통합 설정 스크립트를 실행한다.
 ./scripts/setup.sh
 ```
 
-이 스크립트는 Node.js 버전을 확인하고 `npm ci`, `.venv` 생성, pip 업그레이드, `requirements-dev.txt` 설치를 순서대로 수행한다. 이미 생성된 `.venv`는 재사용하므로 의존성을 갱신할 때 다시 실행해도 된다.
+이 스크립트는 Node.js 버전을 확인하고 `npm ci`, `.venv` 생성, pip 업그레이드, `requirements/requirements-dev.txt` 설치를 순서대로 수행한다. 이미 생성된 `.venv`는 재사용하므로 의존성을 갱신할 때 다시 실행해도 된다.
 
 Windows PowerShell에서는 다음 명령을 실행한다.
 
@@ -57,7 +57,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 - `-ExecutionPolicy Bypass`: 이 실행에서만 스크립트 실행을 허용하며 시스템 정책은 영구 변경하지 않음
 - `-File .\scripts\setup.ps1`: 현재 프로젝트의 환경 설정 스크립트 실행
 
-`setup.ps1`은 Node.js와 npm을 확인하고 프론트엔드 패키지를 설치한다. 이어서 Windows의 `py -3.12`, `python`, `python3` 순서로 Python을 찾아 `.venv\Scripts`에 가상환경을 만들고 `requirements-dev.txt`를 설치한다.
+`setup.ps1`은 Node.js와 npm을 확인하고 프론트엔드 패키지를 설치한다. 이어서 Windows의 `py -3.12`, `python`, `python3` 순서로 Python을 찾아 `.venv\Scripts`에 가상환경을 만들고 `requirements/requirements-dev.txt`를 설치한다.
 
 macOS/Linux에서 각 단계를 직접 실행하려면 다음 명령을 사용한다.
 
@@ -77,7 +77,7 @@ source .venv/bin/activate
 
 # 가상환경 내부 도구와 전체 개발 의존성 설치
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 Windows PowerShell에서 수동으로 가상환경을 활성화하려면 다음 명령을 사용한다.
@@ -92,7 +92,7 @@ py -3.12 -m venv .venv
 
 # 가상환경 내부 도구와 전체 개발 의존성 설치
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 Node.js 패키지는 Python 가상환경에 넣지 않고 프로젝트의 `node_modules`에 설치된다. 두 환경 모두 프로젝트 폴더 안에 생성되며 `.gitignore`로 Git에서 제외된다.
@@ -101,22 +101,22 @@ Node.js 패키지는 Python 가상환경에 넣지 않고 프로젝트의 `node_
 
 | 파일 | 용도 | 주요 패키지 |
 |---|---|---|
-| `requirements.txt` | 실행 환경 | FastAPI, pydantic-settings, SQLAlchemy, psycopg, NumPy, OpenCV contrib, pyserial |
-| `requirements-dev.txt` | 개발·테스트 환경 | 실행 환경 전체 + pytest, pytest-asyncio, Ruff, mypy |
+| `requirements/requirements.txt` | 실행 환경 | FastAPI, pydantic-settings, SQLAlchemy, psycopg, NumPy, OpenCV contrib, pyserial |
+| `requirements/requirements-dev.txt` | 개발·테스트 환경 | 실행 환경 전체 + pytest, pytest-asyncio, Ruff, mypy |
 
-일반 개발자는 `requirements-dev.txt` 하나만 설치하면 된다. 실행 패키지만 필요한 장치나 배포 환경에서는 다음처럼 설치한다.
+일반 개발자는 `requirements/requirements-dev.txt` 하나만 설치하면 된다. 실행 패키지만 필요한 장치나 배포 환경에서는 다음처럼 설치한다.
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements/requirements.txt
 ```
 
 OpenCV contrib 패키지는 ArUco와 AprilTag marker 기능을 포함하기 위해 선택했다. `pyserial`은 SO-ARM101 또는 ESP32의 직렬 통신 기반선이며, 전용 로봇 SDK는 실제 연결 방식이 확정된 뒤 별도로 추가한다.
 
-SQLAlchemy는 ORM 계층으로 사용하고 PostgreSQL 연결에는 psycopg 3을 사용한다. `requirements-dev.txt`가 `requirements.txt`를 포함하므로 일반 개발환경에서도 PostgreSQL 드라이버가 함께 설치된다.
+SQLAlchemy는 ORM 계층으로 사용하고 PostgreSQL 연결에는 psycopg 3을 사용한다. `requirements/requirements-dev.txt`가 `requirements/requirements.txt`를 포함하므로 일반 개발환경에서도 PostgreSQL 드라이버가 함께 설치된다.
 
 ### PostgreSQL Docker 설정
 
-PostgreSQL 17은 `compose.yaml`의 `db` 서비스로 실행한다. 데이터는 `postgres_data` Docker 볼륨에 저장되므로 컨테이너를 다시 만들어도 유지된다. 호스트 포트는 외부 네트워크에 공개하지 않고 `127.0.0.1`에만 연결한다.
+PostgreSQL 17은 `infra/compose.yaml`의 `db` 서비스로 실행한다. 데이터는 `postgres_data` Docker 볼륨에 저장되므로 컨테이너를 다시 만들어도 유지된다. 호스트 포트는 외부 네트워크에 공개하지 않고 `127.0.0.1`에만 연결한다.
 
 최초 1회 환경변수 예시를 로컬 `.env`로 복사한다. `.env`에는 개발자별 비밀번호가 있으므로 Git에 올라가지 않는다.
 
@@ -134,26 +134,28 @@ Copy-Item .env.example .env
 
 복사한 `.env`에서 `POSTGRES_PASSWORD`와 `DATABASE_URL`의 비밀번호를 동일하게 변경한 뒤 DB를 실행한다.
 
+아래 Docker 명령은 macOS/Linux와 Windows PowerShell 모두 **저장소 루트**에서 실행한다. `--project-directory .`는 기존 `.env`와 Compose 프로젝트·볼륨 이름의 기준 경로를 유지한다. 기존에 별도 프로젝트 이름(`-p` 또는 `COMPOSE_PROJECT_NAME`)을 사용했다면 그대로 유지한다. [파일 이동 및 기존 데이터 유지 안내](../../infra/README.md)
+
 ```bash
-docker compose up -d db
-docker compose ps
+docker compose --project-directory . -f infra/compose.yaml up -d db
+docker compose --project-directory . -f infra/compose.yaml ps
 ```
 
 DB 로그와 직접 접속 명령은 다음과 같다.
 
 ```bash
-docker compose logs -f db
-docker compose exec db psql -U care_pack -d care_pack
+docker compose --project-directory . -f infra/compose.yaml logs -f db
+docker compose --project-directory . -f infra/compose.yaml exec db psql -U care_pack -d care_pack
 ```
 
 종료와 재실행:
 
 ```bash
-docker compose stop db
-docker compose start db
+docker compose --project-directory . -f infra/compose.yaml stop db
+docker compose --project-directory . -f infra/compose.yaml start db
 ```
 
-컨테이너만 제거할 때는 `docker compose down`을 사용한다. `docker compose down -v`는 `postgres_data` 볼륨과 모든 DB 데이터를 삭제하므로 완전 초기화가 필요한 경우에만 사용한다.
+컨테이너만 제거할 때는 `docker compose --project-directory . -f infra/compose.yaml down`을 사용한다. `docker compose --project-directory . -f infra/compose.yaml down -v`는 `postgres_data` 볼륨과 모든 DB 데이터를 삭제하므로 완전 초기화가 필요한 경우에만 사용한다.
 
 호스트의 FastAPI 백엔드는 `.env`의 `localhost:5432` 주소를 사용한다. 나중에 백엔드도 Compose 서비스로 옮기면 호스트 이름을 `localhost`에서 `db`로 변경한다.
 
@@ -205,14 +207,14 @@ python -m uvicorn backend.app.main:app --reload --port 8000
 일상적인 종료는 데이터를 보존한다.
 
 ```bash
-docker compose stop db
+docker compose --project-directory . -f infra/compose.yaml stop db
 ```
 
-컨테이너만 다시 만들 때는 `docker compose down` 후 `docker compose up -d db`를 사용한다. 개발 DB를 완전히 초기화해야 할 때만 다음 명령을 사용한다. 이 명령은 Docker 볼륨과 모든 DB 데이터를 삭제한다.
+컨테이너만 다시 만들 때는 `docker compose --project-directory . -f infra/compose.yaml down` 후 `docker compose --project-directory . -f infra/compose.yaml up -d db`를 사용한다. 개발 DB를 완전히 초기화해야 할 때만 다음 명령을 사용한다. 이 명령은 Docker 볼륨과 모든 DB 데이터를 삭제한다.
 
 ```bash
-docker compose down -v
-docker compose up -d db
+docker compose --project-directory . -f infra/compose.yaml down -v
+docker compose --project-directory . -f infra/compose.yaml up -d db
 python -m alembic -c backend/alembic.ini upgrade head
 python -m backend.app.seed
 ```
@@ -295,7 +297,7 @@ macOS/Linux:
 python3 -m venv --clear .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 Windows PowerShell:
@@ -304,7 +306,7 @@ Windows PowerShell:
 py -3.12 -m venv --clear .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 ### 빌드와 실행
@@ -347,7 +349,8 @@ services/     도메인 서비스 계약과 mock 호출
 mocks/        초기 데이터와 시뮬레이션 엔진
 backend/      FastAPI, SQLAlchemy 모델, Alembic 마이그레이션과 DB 테스트
 scripts/      macOS/Linux·Windows 통합 환경 설정과 개발 실행
-compose.yaml  PostgreSQL 17 Docker Compose 설정
+infra/        PostgreSQL 17 Docker Compose 설정과 실행 안내
+requirements/ 통합 Python 실행·개발 의존성 목록
 types/        공통 TypeScript 모델
 docs/ko/      한국어 기술 문서
 docs/en/      영어 기술 문서

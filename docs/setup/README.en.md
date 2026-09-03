@@ -42,7 +42,7 @@ On macOS/Linux, run:
 ./scripts/setup.sh
 ```
 
-The script checks Node.js, runs `npm ci`, creates or reuses `.venv`, upgrades pip, and installs `requirements-dev.txt`. It is safe to run again when dependencies change.
+The script checks Node.js, runs `npm ci`, creates or reuses `.venv`, upgrades pip, and installs `requirements/requirements-dev.txt`. It is safe to run again when dependencies change.
 
 On Windows PowerShell, run:
 
@@ -57,7 +57,7 @@ The command components are:
 - `-ExecutionPolicy Bypass`: allows scripts for this process only and does not permanently change system policy
 - `-File .\scripts\setup.ps1`: runs the setup script from the current project
 
-`setup.ps1` verifies Node.js and npm and installs the frontend packages. It then looks for `py -3.12`, `python`, and `python3` in that order, creates `.venv\Scripts`, and installs `requirements-dev.txt`.
+`setup.ps1` verifies Node.js and npm and installs the frontend packages. It then looks for `py -3.12`, `python`, and `python3` in that order, creates `.venv\Scripts`, and installs `requirements/requirements-dev.txt`.
 
 To perform each step manually on macOS/Linux:
 
@@ -77,7 +77,7 @@ source .venv/bin/activate
 
 # Install environment tooling and all development dependencies
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 On Windows PowerShell, perform the equivalent setup with:
@@ -92,7 +92,7 @@ py -3.12 -m venv .venv
 
 # Install environment tooling and all development dependencies
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 Node.js packages are installed in the project's `node_modules`, not in the Python virtual environment. Both environments are local to the project and excluded from Git through `.gitignore`.
@@ -101,22 +101,22 @@ Node.js packages are installed in the project's `node_modules`, not in the Pytho
 
 | File | Purpose | Main packages |
 |---|---|---|
-| `requirements.txt` | Runtime environment | FastAPI, pydantic-settings, SQLAlchemy, psycopg, NumPy, OpenCV contrib, pyserial |
-| `requirements-dev.txt` | Development and tests | All runtime packages plus pytest, pytest-asyncio, Ruff, and mypy |
+| `requirements/requirements.txt` | Runtime environment | FastAPI, pydantic-settings, SQLAlchemy, psycopg, NumPy, OpenCV contrib, pyserial |
+| `requirements/requirements-dev.txt` | Development and tests | All runtime packages plus pytest, pytest-asyncio, Ruff, and mypy |
 
-Most developers only need to install `requirements-dev.txt`. A device or deployment environment that needs runtime packages only can use:
+Most developers only need to install `requirements/requirements-dev.txt`. A device or deployment environment that needs runtime packages only can use:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements/requirements.txt
 ```
 
 OpenCV contrib is selected because it includes ArUco and AprilTag marker support. `pyserial` is the initial serial-transport dependency for SO-ARM101 or ESP32; add a robot-specific SDK only after the hardware interface is confirmed.
 
-SQLAlchemy provides the ORM layer and psycopg 3 connects it to PostgreSQL. Because `requirements-dev.txt` includes `requirements.txt`, normal development setup installs the PostgreSQL driver as well.
+SQLAlchemy provides the ORM layer and psycopg 3 connects it to PostgreSQL. Because `requirements/requirements-dev.txt` includes `requirements/requirements.txt`, normal development setup installs the PostgreSQL driver as well.
 
 ### PostgreSQL with Docker
 
-PostgreSQL 17 runs as the `db` service in `compose.yaml`. Data is stored in the `postgres_data` Docker volume and survives container recreation. The host port binds only to `127.0.0.1` and is not exposed to the external network.
+PostgreSQL 17 runs as the `db` service in `infra/compose.yaml`. Data is stored in the `postgres_data` Docker volume and survives container recreation. The host port binds only to `127.0.0.1` and is not exposed to the external network.
 
 For the first setup, copy the environment template to a local `.env`. This file contains each developer's password and is excluded from Git.
 
@@ -134,26 +134,28 @@ Copy-Item .env.example .env
 
 Change the password in both `POSTGRES_PASSWORD` and `DATABASE_URL`, keeping the two values consistent, and then start the database.
 
+Run the Docker commands below from the **repository root** on macOS/Linux or Windows PowerShell. `--project-directory .` preserves the root used for `.env` and the Compose project/volume names. Keep any previously specified project name (`-p` or `COMPOSE_PROJECT_NAME`). [Relocation and data preservation notes](../../infra/README.md)
+
 ```bash
-docker compose up -d db
-docker compose ps
+docker compose --project-directory . -f infra/compose.yaml up -d db
+docker compose --project-directory . -f infra/compose.yaml ps
 ```
 
 View logs or open a database shell with:
 
 ```bash
-docker compose logs -f db
-docker compose exec db psql -U care_pack -d care_pack
+docker compose --project-directory . -f infra/compose.yaml logs -f db
+docker compose --project-directory . -f infra/compose.yaml exec db psql -U care_pack -d care_pack
 ```
 
 Stop and restart it with:
 
 ```bash
-docker compose stop db
-docker compose start db
+docker compose --project-directory . -f infra/compose.yaml stop db
+docker compose --project-directory . -f infra/compose.yaml start db
 ```
 
-Use `docker compose down` to remove only the container. `docker compose down -v` also deletes the `postgres_data` volume and every database record, so use it only for an intentional full reset.
+Use `docker compose --project-directory . -f infra/compose.yaml down` to remove only the container. `docker compose --project-directory . -f infra/compose.yaml down -v` also deletes the `postgres_data` volume and every database record, so use it only for an intentional full reset.
 
 The FastAPI backend running on the host uses `localhost:5432` from `.env`. If the backend later becomes another Compose service, change the hostname from `localhost` to `db`.
 
@@ -205,14 +207,14 @@ Open `http://127.0.0.1:8000/health` to verify database connectivity. The web UI 
 The normal stop command preserves all data:
 
 ```bash
-docker compose stop db
+docker compose --project-directory . -f infra/compose.yaml stop db
 ```
 
-Use `docker compose down` followed by `docker compose up -d db` to recreate only the container. Use the following full reset only when all development data may be deleted:
+Use `docker compose --project-directory . -f infra/compose.yaml down` followed by `docker compose --project-directory . -f infra/compose.yaml up -d db` to recreate only the container. Use the following full reset only when all development data may be deleted:
 
 ```bash
-docker compose down -v
-docker compose up -d db
+docker compose --project-directory . -f infra/compose.yaml down -v
+docker compose --project-directory . -f infra/compose.yaml up -d db
 python -m alembic -c backend/alembic.ini upgrade head
 python -m backend.app.seed
 ```
@@ -295,7 +297,7 @@ macOS/Linux:
 python3 -m venv --clear .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 Windows PowerShell:
@@ -304,7 +306,7 @@ Windows PowerShell:
 py -3.12 -m venv --clear .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements/requirements-dev.txt
 ```
 
 ### Build and run
@@ -347,7 +349,8 @@ services/     Domain service contracts and mock calls
 mocks/        Initial data and simulation engine
 backend/      FastAPI, SQLAlchemy models, Alembic migrations, and DB tests
 scripts/      Unified setup and development commands for macOS/Linux and Windows
-compose.yaml  PostgreSQL 17 Docker Compose configuration
+infra/        PostgreSQL 17 Docker Compose configuration and instructions
+requirements/ Shared Python runtime and development dependency lists
 types/        Shared TypeScript models
 docs/ko/      Korean technical documentation
 docs/en/      English technical documentation

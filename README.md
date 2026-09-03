@@ -189,6 +189,19 @@ npm run build
 | 통합 시험 | 사람이 감독하는 실물 시험, 반복 성공률·오차·시간 측정 |
 | 운전 안전 | 하드웨어 비상정지·독립 watchdog·접근 인증 보강 |
 
+## 저장소 폴더 구성
+
+루트에는 프로젝트 소개와 웹 실행에 필요한 설정만 유지하고, 문서·설치 목록·인프라 설정은 아래 폴더에서 관리합니다. 웹 실행 명령은 기존과 같습니다.
+
+| 위치 | 내용 |
+|---|---|
+| [docs/](docs/README.md) | 설계 문서와 한국어·영어 실행 안내 |
+| [infra/](infra/README.md) | Docker Compose 설정과 DB 실행 안내 |
+| [requirements/](requirements/README.md) | 통합 Python 실행·개발 의존성 목록 |
+| [scripts/](scripts/README.md) | macOS/Linux·Windows 설치와 실행 스크립트 |
+
+`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts` 등 도구가 사용하는 설정은 루트에 남깁니다. `.venv`, `node_modules`, `.env`, `.openai` 같은 로컬 환경 파일은 Git에 올리지 않습니다.
+
 ## 개발 문서
 
 | 내용 | 문서 |
