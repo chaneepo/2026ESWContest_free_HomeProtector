@@ -54,4 +54,4 @@ The current web application demonstrates this workflow in simulation. It is not 
 
 This repository contains the current CARE-PACK control-center frontend, domain models, and simulation contracts. The intended evolution is to preserve the domain boundary while replacing mock services with backend and hardware adapters.
 
-See the [English README](../../README.en.md) for setup and [System Architecture](01_SYSTEM_ARCHITECTURE.md) for the complete boundary model.
+See the [English README](../setup/README.en.md) for setup and [System Architecture](01_SYSTEM_ARCHITECTURE.md) for the complete boundary model.

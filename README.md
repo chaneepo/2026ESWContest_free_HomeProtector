@@ -193,7 +193,7 @@ npm run build
 
 | 내용 | 문서 |
 |---|---|
-| 개발환경·DB·Windows 상세 설정 | [한국어](README.ko.md) · [English](README.en.md) |
+| 개발환경·DB·Windows 상세 설정 | [한국어](docs/setup/README.ko.md) · [English](docs/setup/README.en.md) |
 | 자율 작업 시뮬레이션·확장 설계 | [Autonomy Docs](autonomy/README.md) |
 | 안전 점검·확인 범위 | [Safety Review](raspbot_runtime/SAFETY_REVIEW.md) |
 | 라즈봇 실행·운영·진행 기록 | [README](raspbot_runtime/README.md) · [Operations](raspbot_runtime/OPERATIONS.md) · [Progress](raspbot_runtime/PROGRESS.md) |

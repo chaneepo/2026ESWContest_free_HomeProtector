@@ -54,4 +54,4 @@ flowchart LR
 
 이 저장소는 현재 CARE-PACK 제어센터의 프론트엔드 프로토타입과 시뮬레이션 계약을 담고 있다. UI와 도메인 모델을 실제 시스템의 기준 계약으로 발전시키되, 하드웨어 상세를 화면 코드에 직접 결합하지 않는 구조를 지향한다.
 
-실행 방법은 [한국어 README](../../README.ko.md), 전체 시스템 구조는 [시스템 아키텍처](01_SYSTEM_ARCHITECTURE.md)를 참고한다.
+실행 방법은 [한국어 README](../setup/README.ko.md), 전체 시스템 구조는 [시스템 아키텍처](01_SYSTEM_ARCHITECTURE.md)를 참고한다.

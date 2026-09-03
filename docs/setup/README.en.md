@@ -2,7 +2,9 @@
 
 CARE-PACK plans items for an outing, uses a robot arm to move them into a bag, and verifies that loading physically succeeded. This repository currently contains the Korean control-center UI and a pre-hardware simulation.
 
-> The project provides manual Raspbot control, camera-server integration, and job/arm UI simulation. A standalone simulator validates autonomous task decisions and state transitions. See the [feature guide](README.md), [autonomy simulator](autonomy/README.md), and [safety review](raspbot_runtime/SAFETY_REVIEW.md).
+> The project provides manual Raspbot control, camera-server integration, and job/arm UI simulation. A standalone simulator validates autonomous task decisions and state transitions. See the [feature guide](../../README.md), [autonomy simulator](../../autonomy/README.md), and [safety review](../../raspbot_runtime/SAFETY_REVIEW.md).
+
+Although this guide lives in `docs/setup/`, run the commands from the **project root** containing `package.json`, unless explicitly stated otherwise.
 
 ## Development environment setup
 
@@ -345,18 +347,18 @@ docs/en/      English technical documentation
 
 ## Documentation
 
-- [Project Overview](docs/en/00_PROJECT_OVERVIEW.md)
-- [System Architecture](docs/en/01_SYSTEM_ARCHITECTURE.md)
-- [Frontend Structure](docs/en/02_FRONTEND_STRUCTURE.md)
-- [Backend API Specification](docs/en/03_BACKEND_API_SPEC.md)
-- [State Machine](docs/en/04_STATE_MACHINE.md)
-- [Vision System Design](docs/en/05_VISION_DESIGN.md)
-- [SO-ARM101 Interface](docs/en/06_SO_ARM101_INTERFACE.md)
-- [Database Schema](docs/en/07_DATABASE_SCHEMA.md)
-- [Simulation Mode](docs/en/08_SIMULATION_MODE.md)
-- [Event Log Specification](docs/en/09_EVENT_LOG_SPEC.md)
-- [Failure Recovery](docs/en/10_FAILURE_RECOVERY.md)
-- [Development Roadmap](docs/en/11_DEVELOPMENT_ROADMAP.md)
-- [Team Interface Guide](docs/en/12_TEAM_INTERFACE.md)
+- [Project Overview](../en/00_PROJECT_OVERVIEW.md)
+- [System Architecture](../en/01_SYSTEM_ARCHITECTURE.md)
+- [Frontend Structure](../en/02_FRONTEND_STRUCTURE.md)
+- [Backend API Specification](../en/03_BACKEND_API_SPEC.md)
+- [State Machine](../en/04_STATE_MACHINE.md)
+- [Vision System Design](../en/05_VISION_DESIGN.md)
+- [SO-ARM101 Interface](../en/06_SO_ARM101_INTERFACE.md)
+- [Database Schema](../en/07_DATABASE_SCHEMA.md)
+- [Simulation Mode](../en/08_SIMULATION_MODE.md)
+- [Event Log Specification](../en/09_EVENT_LOG_SPEC.md)
+- [Failure Recovery](../en/10_FAILURE_RECOVERY.md)
+- [Development Roadmap](../en/11_DEVELOPMENT_ROADMAP.md)
+- [Team Interface Guide](../en/12_TEAM_INTERFACE.md)
 
 For Korean, see [README.ko.md](README.ko.md).

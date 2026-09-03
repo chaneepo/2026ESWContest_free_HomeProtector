@@ -2,7 +2,9 @@
 
 CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으로 옮기며, 센서로 실제 적재 여부를 확인하는 생활 보조 시스템이다. 이 저장소에는 현재 한국어 제어센터 UI와 장비 연동 전 시뮬레이션이 구현되어 있다.
 
-> 라즈봇 수동 제어, 카메라 서버 연동과 작업·팔 UI 시뮬레이션을 제공한다. 자율 작업의 의사결정과 상태 전이는 독립 시뮬레이터로 검증한다. [기능 안내](README.md), [자율 작업 시뮬레이터](autonomy/README.md), [안전 점검](raspbot_runtime/SAFETY_REVIEW.md)을 참고한다.
+> 라즈봇 수동 제어, 카메라 서버 연동과 작업·팔 UI 시뮬레이션을 제공한다. 자율 작업의 의사결정과 상태 전이는 독립 시뮬레이터로 검증한다. [기능 안내](../../README.md), [자율 작업 시뮬레이터](../../autonomy/README.md), [안전 점검](../../raspbot_runtime/SAFETY_REVIEW.md)을 참고한다.
+
+이 문서는 `docs/setup/`에 있지만, 아래 명령은 별도 안내가 없으면 `package.json`이 있는 **프로젝트 루트**에서 실행합니다.
 
 ## 개발 환경 설정
 
@@ -345,18 +347,18 @@ docs/en/      영어 기술 문서
 
 ## 문서
 
-- [프로젝트 개요](docs/ko/00_PROJECT_OVERVIEW.md)
-- [시스템 아키텍처](docs/ko/01_SYSTEM_ARCHITECTURE.md)
-- [프론트엔드 구조](docs/ko/02_FRONTEND_STRUCTURE.md)
-- [백엔드 API 명세](docs/ko/03_BACKEND_API_SPEC.md)
-- [상태기계](docs/ko/04_STATE_MACHINE.md)
-- [비전 시스템 설계](docs/ko/05_VISION_DESIGN.md)
-- [SO-ARM101 인터페이스](docs/ko/06_SO_ARM101_INTERFACE.md)
-- [데이터베이스 스키마](docs/ko/07_DATABASE_SCHEMA.md)
-- [시뮬레이션 모드](docs/ko/08_SIMULATION_MODE.md)
-- [이벤트 로그 명세](docs/ko/09_EVENT_LOG_SPEC.md)
-- [실패 복구](docs/ko/10_FAILURE_RECOVERY.md)
-- [개발 로드맵](docs/ko/11_DEVELOPMENT_ROADMAP.md)
-- [팀 인터페이스 가이드](docs/ko/12_TEAM_INTERFACE.md)
+- [프로젝트 개요](../ko/00_PROJECT_OVERVIEW.md)
+- [시스템 아키텍처](../ko/01_SYSTEM_ARCHITECTURE.md)
+- [프론트엔드 구조](../ko/02_FRONTEND_STRUCTURE.md)
+- [백엔드 API 명세](../ko/03_BACKEND_API_SPEC.md)
+- [상태기계](../ko/04_STATE_MACHINE.md)
+- [비전 시스템 설계](../ko/05_VISION_DESIGN.md)
+- [SO-ARM101 인터페이스](../ko/06_SO_ARM101_INTERFACE.md)
+- [데이터베이스 스키마](../ko/07_DATABASE_SCHEMA.md)
+- [시뮬레이션 모드](../ko/08_SIMULATION_MODE.md)
+- [이벤트 로그 명세](../ko/09_EVENT_LOG_SPEC.md)
+- [실패 복구](../ko/10_FAILURE_RECOVERY.md)
+- [개발 로드맵](../ko/11_DEVELOPMENT_ROADMAP.md)
+- [팀 인터페이스 가이드](../ko/12_TEAM_INTERFACE.md)
 
 영문 안내는 [README.en.md](README.en.md)를 참고한다.
