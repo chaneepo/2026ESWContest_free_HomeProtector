@@ -10,7 +10,7 @@
 |---|---|
 | [프로젝트 개요](00_PROJECT_OVERVIEW.md) | [Project](../../README.md) |
 | [시스템 아키텍처](01_SYSTEM_ARCHITECTURE.md) | [Project](../../README.md) |
-| [프론트엔드 구조](02_FRONTEND_STRUCTURE.md) | [Web UI](../../views/README.md) |
+| [프론트엔드 구조](02_FRONTEND_STRUCTURE.md) | [Web UI](../../frontend/views/README.md) |
 | [백엔드 API 설계](03_BACKEND_API_SPEC.md) | [Project](../../README.md) |
 | [작업 상태기계](04_STATE_MACHINE.md) | [Project](../../README.md) |
 | [비전 시스템 설계](05_VISION_DESIGN.md) | [Project](../../README.md) |

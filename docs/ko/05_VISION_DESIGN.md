@@ -2,7 +2,7 @@
 
 ## 1. 현재 상태
 
-현재 비전 기능은 `services/visionService.ts`, `mocks/mockData.ts`, `views/VisionPage.tsx`로 구성된 시뮬레이션이다. 실제 카메라 프레임, OpenCV, AprilTag/ArUco 검출, 카메라 보정은 포함되어 있지 않다.
+현재 비전 기능은 `frontend/services/visionService.ts`, `frontend/mocks/mockData.ts`, `frontend/views/VisionPage.tsx`로 구성된 시뮬레이션이다. 실제 카메라 프레임, OpenCV, AprilTag/ArUco 검출, 카메라 보정은 포함되어 있지 않다.
 
 시뮬레이션은 활성 물품 하나와 `A1`, `A2`, `B1`, `B2`, `B3`, `C2` 중 하나를 임의로 선택하고 카메라 기준 XYZ 좌표를 생성한다. 화면은 3×3 보관함 그리드와 인식 결과를 표시한다.
 

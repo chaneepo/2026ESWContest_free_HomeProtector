@@ -6,7 +6,7 @@
 
 | 독립 저장소 | 이 통합 저장소의 코드 위치 | 역할 |
 |---|---|---|
-| [carepack_web](https://github.com/chaneepo/carepack_web) | `app/`, `components/`, `views/`, `lib/` 등 | 웹 UI와 장치 프록시 |
+| [carepack_web](https://github.com/chaneepo/carepack_web) | `frontend/` (웹 코드·설정) | 웹 UI와 장치 프록시 |
 | [carepack_raspbot](https://github.com/chaneepo/carepack_raspbot) | `raspbot_runtime/` | Pi 라즈봇 제어 서버·전용 UI |
 | [carepack_arm](https://github.com/chaneepo/carepack_arm) | `motor/` | SO-ARM101·ESP32 도구 |
 | [carepack_vision](https://github.com/chaneepo/carepack_vision) | `vision/` | 학습·라벨링·추론·웹 스트림 |
@@ -22,7 +22,7 @@
 - 기준 통합 커밋: `c4f6c62999bfcf10cefd16c97f24c56144d6f76f`.
 - 새 저장소는 해당 공개 소스를 선별한 독립 스냅샷입니다. 이전 커밋 이력은 기존 통합 저장소에 남아 있습니다.
 - 각 저장소의 `SOURCE.json`에 원본과 포함 경로를 기록했습니다.
-- 원래 통합 소스·로컬 `.env.local`·현재 실행 중인 웹과 카메라는 유지합니다.
+- 원래 통합 소스·로컬 `frontend/.env.local`·현재 실행 중인 웹과 카메라는 유지합니다.
 - 웹의 라즈봇 공통 클라이언트는 `lib/raspbot/`에 독립 사본을 두었습니다. 기존 로컬에서 확인된 `fetch` 호출 바인딩 수정은 새 웹·라즈봇 사본 모두에 반영했습니다.
 - 카메라 전용 `vision_stream.py`를 비전 저장소에 추가했습니다. 로봇 제어기를 시작하지 않습니다.
 - 원래 Sites 배포 ID와 로그인 연결은 새 웹 저장소에 복사하지 않았습니다.
@@ -34,7 +34,7 @@
 
 독립 웹 저장소의 `lib/raspbot/control-client.*`와 독립 라즈봇 저장소의 `chan/web/control-client.*`(이 통합본에서는 `raspbot_runtime/web/control-client.*`)는 같은 제어 프로토콜을 사용합니다. 프로토콜을 바꾸면 양쪽 테스트를 실행하고 함께 반영합니다.
 
-장치 주소는 웹의 무시된 `.env.local`에만 설정합니다. 코드를 GitHub에 올리는 것과 실제 장치에 배포·모터 운전을 시작하는 것은 별개입니다. 분리 작업은 장치를 재시작하거나 모터를 조작하지 않습니다.
+장치 주소는 웹의 무시된 `frontend/.env.local`에만 설정합니다. 코드를 GitHub에 올리는 것과 실제 장치에 배포·모터 운전을 시작하는 것은 별개입니다. 분리 작업은 장치를 재시작하거나 모터를 조작하지 않습니다.
 
 ## 분리 검증
 

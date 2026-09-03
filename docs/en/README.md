@@ -10,7 +10,7 @@ These documents describe the system architecture, module interfaces, and planned
 |---|---|
 | [Project overview](00_PROJECT_OVERVIEW.md) | [Project](../../README.md) |
 | [System architecture](01_SYSTEM_ARCHITECTURE.md) | [Project](../../README.md) |
-| [Frontend structure](02_FRONTEND_STRUCTURE.md) | [Web UI](../../views/README.md) |
+| [Frontend structure](02_FRONTEND_STRUCTURE.md) | [Web UI](../../frontend/views/README.md) |
 | [Backend API specification](03_BACKEND_API_SPEC.md) | [Project](../../README.md) |
 | [State machine](04_STATE_MACHINE.md) | [Project](../../README.md) |
 | [Vision design](05_VISION_DESIGN.md) | [Project](../../README.md) |

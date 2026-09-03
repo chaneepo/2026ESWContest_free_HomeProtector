@@ -27,10 +27,10 @@ if (major < 22 || (major === 22 && minor < 13)) {
 '
 
 echo "[CARE-PACK] 1/3 Node.js 패키지를 설치합니다."
-if [[ -f package-lock.json ]]; then
-  npm ci
+if [[ -f frontend/package-lock.json ]]; then
+  npm --prefix frontend ci
 else
-  npm install
+  npm --prefix frontend install
 fi
 
 echo "[CARE-PACK] 2/3 Python 가상환경을 준비합니다."

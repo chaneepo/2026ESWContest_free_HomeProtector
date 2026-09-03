@@ -17,16 +17,16 @@ React Router, Zustand, Axios, and a backend SDK are not current dependencies.
 
 | Path | Responsibility |
 |---|---|
-| `app/page.tsx` | Single page entry rendering `ControlCenter` |
-| `app/layout.tsx` | Root layout and metadata |
-| `components/ControlCenter.tsx` | Navigation shell and view selection |
-| `components/ui.tsx` | Shared cards, badges, buttons, and UI elements |
-| `store/SystemProvider.tsx` | Global state and use-case orchestration |
-| `types/index.ts` | Domain types and enums |
-| `services/*.ts` | Device/job/item/event service boundaries |
-| `mocks/mockData.ts` | Initial simulation data |
-| `mocks/simulationEngine.ts` | Timed execution and failure injection |
-| `views/*.tsx` | Feature views |
+| `frontend/app/page.tsx` | Single page entry rendering `ControlCenter` |
+| `frontend/app/layout.tsx` | Root layout and metadata |
+| `frontend/components/ControlCenter.tsx` | Navigation shell and view selection |
+| `frontend/components/ui.tsx` | Shared cards, badges, buttons, and UI elements |
+| `frontend/store/SystemProvider.tsx` | Global state and use-case orchestration |
+| `frontend/types/index.ts` | Domain types and enums |
+| `frontend/services/*.ts` | Device/job/item/event service boundaries |
+| `frontend/mocks/mockData.ts` | Initial simulation data |
+| `frontend/mocks/simulationEngine.ts` | Timed execution and failure injection |
+| `frontend/views/*.tsx` | Feature views |
 
 ## 3. Views
 
@@ -61,7 +61,7 @@ sequenceDiagram
 
 ## 6. Real-integration change points
 
-Views should continue to avoid direct hardware calls. Replace `services/*.ts` with HTTP/live clients and let `SystemProvider` consume the same domain types. Once a backend exists, server state, version, and timestamps must be authoritative.
+Views should continue to avoid direct hardware calls. Replace `frontend/services/*.ts` with HTTP/live clients and let `SystemProvider` consume the same domain types. Once a backend exists, server state, version, and timestamps must be authoritative.
 
 Recommended follow-up work includes an API client and environment-based URL, explicit timeout/reconnection models, real routes and authorization, state-transition tests, working item search, and history export.
 

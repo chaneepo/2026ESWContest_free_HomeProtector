@@ -128,11 +128,11 @@ cd 2026ESWContest_free_HomeProtector
 Node.js 22.13 이상이 필요합니다.
 
 ```bash
-npm ci
-npm run dev
+npm --prefix frontend ci
+npm --prefix frontend run dev
 ```
 
-장치 주소를 설정하지 않아도 화면과 기존 작업 시뮬레이션을 확인할 수 있습니다. 실제 기기는 연결 실패·이동 잠금으로 표시됩니다. 장치 연결이 필요할 때만 `.env.local`에 **직접 확인한 주소**를 설정하세요.
+장치 주소를 설정하지 않아도 화면과 기존 작업 시뮬레이션을 확인할 수 있습니다. 실제 기기는 연결 실패·이동 잠금으로 표시됩니다. 장치 연결이 필요할 때만 `frontend/.env.local`에 **직접 확인한 주소**를 설정하세요.
 
 ```dotenv
 RASPBOT_API_URL=http://127.0.0.1:8090
@@ -170,8 +170,8 @@ python3 server.py --host 127.0.0.1 --port 8090
 python3 -B -m unittest discover -s autonomy/tests -v
 (cd raspbot_runtime && python3 -B -m unittest discover -s tests -v)
 node --test raspbot_runtime/tests/control-client.test.mjs
-npx tsc --noEmit --incremental false
-npm run build
+(cd frontend && npx tsc --noEmit --incremental false)
+npm --prefix frontend run build
 ```
 
 하드웨어 없이 실행하는 테스트입니다. 테스트 통과는 실제 바퀴·팔의 안전성이나 정확도 검증을 대체하지 않습니다.
@@ -191,16 +191,17 @@ npm run build
 
 ## 저장소 폴더 구성
 
-루트에는 프로젝트 소개와 웹 실행에 필요한 설정만 유지하고, 문서·설치 목록·인프라 설정은 아래 폴더에서 관리합니다. 웹 실행 명령은 기존과 같습니다.
+웹 코드와 설정은 `frontend/`에 모았습니다. 아래 명령은 저장소 루트에서 실행하며, 웹 폴더 안에서는 기존 `npm run dev`도 사용할 수 있습니다.
 
 | 위치 | 내용 |
 |---|---|
+| [frontend/](frontend/README.md) | 웹 코드·TS/JSON 설정·Node.js 패키지 |
 | [docs/](docs/README.md) | 설계 문서와 한국어·영어 실행 안내 |
 | [infra/](infra/README.md) | Docker Compose 설정과 DB 실행 안내 |
 | [requirements/](requirements/README.md) | 통합 Python 실행·개발 의존성 목록 |
 | [scripts/](scripts/README.md) | macOS/Linux·Windows 설치와 실행 스크립트 |
 
-`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts` 등 도구가 사용하는 설정은 루트에 남깁니다. `.venv`, `node_modules`, `.env`, `.openai` 같은 로컬 환경 파일은 Git에 올리지 않습니다.
+`package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts` 등 웹 설정은 모두 `frontend/` 안에 있습니다. Python `.venv`와 DB `.env`는 저장소 루트에 유지합니다. 웹 전용 `.env.local`, `.openai`, `node_modules`는 `frontend/`에 두며 Git에 올리지 않습니다. [이동 후 실행·배포 안내](frontend/README.md)
 
 ## 개발 문서
 
@@ -222,6 +223,6 @@ npm run build
 - 실물 시험은 바퀴를 띄우고 주변을 비운 상태에서 사람이 지켜보며 시작합니다.
 - 소프트웨어 STOP은 하드웨어 전원 차단을 대신하지 못합니다. 정지 응답이 실패하거나 실제로 멈추지 않으면 본체 전원을 차단하세요.
 - 현재 제어 서버에는 사용자 로그인 인증이 없습니다. 인터넷 공개·포트 포워딩·전체 네트워크 방화벽 허용을 하지 마세요. 신뢰할 수 있는 로컬망 또는 SSH 터널을 사용합니다.
-- 비밀번호·SSH 키·`.env.local`은 저장소에 올리지 않습니다.
+- 비밀번호·SSH 키·`frontend/.env.local`은 저장소에 올리지 않습니다.
 
 <sub>문서 구성 참고: <a href="https://github.com/Dongbang-Yeuijiguk/2025ESWContest_smart_3019">2025ESWContest_smart_3019</a>.</sub>

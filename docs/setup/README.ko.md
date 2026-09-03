@@ -4,15 +4,15 @@ CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으�
 
 > 라즈봇 수동 제어, 카메라 서버 연동과 작업·팔 UI 시뮬레이션을 제공한다. 자율 작업의 의사결정과 상태 전이는 독립 시뮬레이터로 검증한다. [기능 안내](../../README.md), [자율 작업 시뮬레이터](../../autonomy/README.md), [안전 점검](../../raspbot_runtime/SAFETY_REVIEW.md)을 참고한다.
 
-이 문서는 `docs/setup/`에 있지만, 아래 명령은 별도 안내가 없으면 `package.json`이 있는 **프로젝트 루트**에서 실행합니다.
+이 문서는 `docs/setup/`에 있지만, 아래 명령은 별도 안내가 없으면 `README.md`가 있는 **저장소 루트**에서 실행합니다.
 
 ## 개인 배포 설정과 Git 제외
 
-`.openai/`는 개인 ChatGPT Sites 연결 설정이므로 Git에 포함하지 않습니다. 새로 clone한 환경에 `.openai/hosting.json`이 없어도 `npm run dev`와 `npm run build`를 사용할 수 있습니다. 파일이 없으면 Sites 전용 배포 메타데이터 처리와 로컬 모의 로그인을 사용하지 않고, D1·R2 바인딩 없이 실행합니다. Docker PostgreSQL 설정에는 영향을 주지 않습니다.
+`frontend/.openai/`는 개인 ChatGPT Sites 연결 설정이므로 Git에 포함하지 않습니다. 새로 clone한 환경에 `frontend/.openai/hosting.json`이 없어도 `npm --prefix frontend run dev`와 `npm --prefix frontend run build`를 사용할 수 있습니다. 파일이 없으면 Sites 전용 배포 메타데이터 처리와 로컬 모의 로그인을 사용하지 않고, D1·R2 바인딩 없이 실행합니다. Docker PostgreSQL 설정에는 영향을 주지 않습니다.
 
 기존 로컬 파일은 그대로 보존하며, 파일이 있으면 해당 설정과 Sites 플러그인을 사용합니다. 잘못된 JSON·바인딩 형식·읽기 오류는 명시적인 오류로 처리합니다. 기존 사이트를 배포하는 담당자는 검증된 로컬 연결 파일을 유지해야 하며, 다른 팀원이 그 개인 프로젝트 ID를 복사할 필요는 없습니다. API 키·비밀번호는 이 파일이나 Git에 넣지 마세요.
 
-관련 회귀 검사는 프로젝트 루트에서 `node --test scripts/load-hosting-config.test.mjs`로 실행합니다.
+관련 회귀 검사는 프로젝트 루트에서 `node --test frontend/scripts/load-hosting-config.test.mjs`로 실행합니다.
 
 ## 개발 환경 설정
 
@@ -20,7 +20,7 @@ CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으�
 
 ### 필요 환경
 
-- Node.js 22.13 이상 (`.nvmrc`: `22.13.0`)
+- Node.js 22.13 이상 (`frontend/.nvmrc`: `22.13.0`)
 - npm
 - Python 3.12.2 (`.python-version`: `3.12.2`)
 - Docker Desktop 또는 Docker Engine과 Docker Compose
@@ -42,7 +42,7 @@ macOS/Linux에서는 다음 통합 설정 스크립트를 실행한다.
 ./scripts/setup.sh
 ```
 
-이 스크립트는 Node.js 버전을 확인하고 `npm ci`, `.venv` 생성, pip 업그레이드, `requirements/requirements-dev.txt` 설치를 순서대로 수행한다. 이미 생성된 `.venv`는 재사용하므로 의존성을 갱신할 때 다시 실행해도 된다.
+이 스크립트는 Node.js 버전을 확인하고 `npm --prefix frontend ci`, `.venv` 생성, pip 업그레이드, `requirements/requirements-dev.txt` 설치를 순서대로 수행한다. 이미 생성된 `.venv`는 재사용하므로 의존성을 갱신할 때 다시 실행해도 된다.
 
 Windows PowerShell에서는 다음 명령을 실행한다.
 
@@ -63,11 +63,13 @@ macOS/Linux에서 각 단계를 직접 실행하려면 다음 명령을 사용�
 
 ```bash
 # Node.js 버전 선택: nvm 사용 시
+cd frontend
 nvm install
 nvm use
+cd ..
 
 # 프론트엔드 패키지 설치
-npm install
+npm --prefix frontend install
 
 # Python 가상환경 생성
 python3 -m venv .venv
@@ -84,7 +86,7 @@ Windows PowerShell에서 수동으로 가상환경을 활성화하려면 다음 
 
 ```powershell
 # 프론트엔드 패키지 설치
-npm install
+npm --prefix frontend install
 
 # Python 가상환경 생성 및 활성화
 py -3.12 -m venv .venv
@@ -95,7 +97,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements/requirements-dev.txt
 ```
 
-Node.js 패키지는 Python 가상환경에 넣지 않고 프로젝트의 `node_modules`에 설치된다. 두 환경 모두 프로젝트 폴더 안에 생성되며 `.gitignore`로 Git에서 제외된다.
+Node.js 패키지는 Python 가상환경에 넣지 않고 프로젝트의 `frontend/node_modules`에 설치된다. 두 환경 모두 프로젝트 폴더 안에 생성되며 `.gitignore`로 Git에서 제외된다.
 
 ### Python 설치 목록
 
@@ -259,7 +261,7 @@ Windows PowerShell:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev.ps1
 ```
 
-각 `dev` 스크립트는 운영체제에 맞는 `.venv`와 `node_modules`를 확인하고 Python 가상환경을 활성화한 뒤 프론트엔드 서버를 시작한다. 개발 서버가 출력하는 로컬 주소를 브라우저에서 연다. 향후 FastAPI가 추가되면 같은 스크립트에 백엔드 실행을 연결한다.
+각 `dev` 스크립트는 운영체제에 맞는 `.venv`와 `frontend/node_modules`를 확인하고 Python 가상환경을 활성화한 뒤 프론트엔드 서버를 시작한다. 개발 서버가 출력하는 로컬 주소를 브라우저에서 연다. 향후 FastAPI가 추가되면 같은 스크립트에 백엔드 실행을 연결한다.
 
 ### Python 패키지 관리
 
@@ -314,14 +316,14 @@ python -m pip install -r requirements/requirements-dev.txt
 개발 실행:
 
 ```bash
-npm run dev
+npm --prefix frontend run dev
 ```
 
 배포 빌드 확인은 다음과 같다.
 
 ```bash
-npm run build
-npm run start
+npm --prefix frontend run build
+npm --prefix frontend run start
 ```
 
 가상환경 활성화 여부는 현재 Node.js 프론트엔드 빌드 결과에 영향을 주지 않는다.
@@ -341,17 +343,17 @@ npm run start
 ## 코드 구조
 
 ```text
-app/          앱 진입점과 레이아웃
-components/   제어센터 셸과 공통 UI
-views/        기능별 화면
-store/        전역 상태와 실행 조정
-services/     도메인 서비스 계약과 mock 호출
-mocks/        초기 데이터와 시뮬레이션 엔진
+frontend/app/          앱 진입점과 레이아웃
+frontend/components/   제어센터 셸과 공통 UI
+frontend/views/        기능별 화면
+frontend/store/        전역 상태와 실행 조정
+frontend/services/     도메인 서비스 계약과 mock 호출
+frontend/mocks/        초기 데이터와 시뮬레이션 엔진
 backend/      FastAPI, SQLAlchemy 모델, Alembic 마이그레이션과 DB 테스트
 scripts/      macOS/Linux·Windows 통합 환경 설정과 개발 실행
 infra/        PostgreSQL 17 Docker Compose 설정과 실행 안내
 requirements/ 통합 Python 실행·개발 의존성 목록
-types/        공통 TypeScript 모델
+frontend/types/        공통 TypeScript 모델
 docs/ko/      한국어 기술 문서
 docs/en/      영어 기술 문서
 ```

@@ -2,7 +2,7 @@
 
 ## 1. Current implementation
 
-`services/armService.ts` simulates the following commands and always returns success after roughly 350 ms:
+`frontend/services/armService.ts` simulates the following commands and always returns success after roughly 350 ms:
 
 - `HOME`
 - `SAFE`

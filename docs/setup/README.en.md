@@ -4,15 +4,15 @@ CARE-PACK plans items for an outing, uses a robot arm to move them into a bag, a
 
 > The project provides manual Raspbot control, camera-server integration, and job/arm UI simulation. A standalone simulator validates autonomous task decisions and state transitions. See the [feature guide](../../README.md), [autonomy simulator](../../autonomy/README.md), and [safety review](../../raspbot_runtime/SAFETY_REVIEW.md).
 
-Although this guide lives in `docs/setup/`, run the commands from the **project root** containing `package.json`, unless explicitly stated otherwise.
+Although this guide lives in `docs/setup/`, run the commands from the **repository root** containing `README.md`, unless explicitly stated otherwise.
 
 ## Personal deployment settings and Git
 
-`.openai/` contains personal ChatGPT Sites connection settings and is excluded from Git. A fresh clone can run `npm run dev` and `npm run build` without `.openai/hosting.json`. Without that file, Sites deployment metadata packaging and local mock sign-in are disabled, with no D1 or R2 bindings. Docker PostgreSQL settings are unaffected.
+`frontend/.openai/` contains personal ChatGPT Sites connection settings and is excluded from Git. A fresh clone can run `npm --prefix frontend run dev` and `npm --prefix frontend run build` without `frontend/.openai/hosting.json`. Without that file, Sites deployment metadata packaging and local mock sign-in are disabled, with no D1 or R2 bindings. Docker PostgreSQL settings are unaffected.
 
 Existing local files are preserved. When the file exists, its bindings and the Sites plugin remain enabled. Invalid JSON, malformed binding values, and read errors fail explicitly. The deployment owner must retain their verified local connection file; teammates do not need to copy that personal project ID. Never store API keys or passwords in this file or Git.
 
-Run the regression tests from the project root with `node --test scripts/load-hosting-config.test.mjs`.
+Run the regression tests from the project root with `node --test frontend/scripts/load-hosting-config.test.mjs`.
 
 ## Development environment setup
 
@@ -20,7 +20,7 @@ The current web frontend runs on Node.js. The Python virtual environment isolate
 
 ### Requirements
 
-- Node.js 22.13 or newer (`.nvmrc`: `22.13.0`)
+- Node.js 22.13 or newer (`frontend/.nvmrc`: `22.13.0`)
 - npm
 - Python 3.12.2 (`.python-version`: `3.12.2`)
 - Docker Desktop or Docker Engine with Docker Compose
@@ -42,7 +42,7 @@ On macOS/Linux, run:
 ./scripts/setup.sh
 ```
 
-The script checks Node.js, runs `npm ci`, creates or reuses `.venv`, upgrades pip, and installs `requirements/requirements-dev.txt`. It is safe to run again when dependencies change.
+The script checks Node.js, runs `npm --prefix frontend ci`, creates or reuses `.venv`, upgrades pip, and installs `requirements/requirements-dev.txt`. It is safe to run again when dependencies change.
 
 On Windows PowerShell, run:
 
@@ -63,11 +63,13 @@ To perform each step manually on macOS/Linux:
 
 ```bash
 # Select Node.js when using nvm
+cd frontend
 nvm install
 nvm use
+cd ..
 
 # Install frontend packages
-npm install
+npm --prefix frontend install
 
 # Create the Python environment
 python3 -m venv .venv
@@ -84,7 +86,7 @@ On Windows PowerShell, perform the equivalent setup with:
 
 ```powershell
 # Install frontend packages
-npm install
+npm --prefix frontend install
 
 # Create and activate the Python environment
 py -3.12 -m venv .venv
@@ -95,7 +97,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements/requirements-dev.txt
 ```
 
-Node.js packages are installed in the project's `node_modules`, not in the Python virtual environment. Both environments are local to the project and excluded from Git through `.gitignore`.
+Node.js packages are installed in the project's `frontend/node_modules`, not in the Python virtual environment. Both environments are local to the project and excluded from Git through `.gitignore`.
 
 ### Python dependency files
 
@@ -259,7 +261,7 @@ Windows PowerShell:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev.ps1
 ```
 
-Each `dev` script verifies the operating-system-specific `.venv` and `node_modules`, activates Python, and starts the frontend. Open the local address printed by the development server. When FastAPI is implemented, its process can be added to the same scripts.
+Each `dev` script verifies the operating-system-specific `.venv` and `frontend/node_modules`, activates Python, and starts the frontend. Open the local address printed by the development server. When FastAPI is implemented, its process can be added to the same scripts.
 
 ### Manage Python packages
 
@@ -314,14 +316,14 @@ python -m pip install -r requirements/requirements-dev.txt
 Development:
 
 ```bash
-npm run dev
+npm --prefix frontend run dev
 ```
 
 Production build verification:
 
 ```bash
-npm run build
-npm run start
+npm --prefix frontend run build
+npm --prefix frontend run start
 ```
 
 Activating the Python environment does not change the current Node.js frontend build.
@@ -341,17 +343,17 @@ UI mock data resets on reload, while the independently operated PostgreSQL datab
 ## Repository structure
 
 ```text
-app/          Application entry and layout
-components/   Control-center shell and shared UI
-views/        Feature views
-store/        Global state and orchestration
-services/     Domain service contracts and mock calls
-mocks/        Initial data and simulation engine
+frontend/app/          Application entry and layout
+frontend/components/   Control-center shell and shared UI
+frontend/views/        Feature views
+frontend/store/        Global state and orchestration
+frontend/services/     Domain service contracts and mock calls
+frontend/mocks/        Initial data and simulation engine
 backend/      FastAPI, SQLAlchemy models, Alembic migrations, and DB tests
 scripts/      Unified setup and development commands for macOS/Linux and Windows
 infra/        PostgreSQL 17 Docker Compose configuration and instructions
 requirements/ Shared Python runtime and development dependency lists
-types/        Shared TypeScript models
+frontend/types/        Shared TypeScript models
 docs/ko/      Korean technical documentation
 docs/en/      English technical documentation
 ```

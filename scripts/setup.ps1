@@ -45,10 +45,10 @@ if (Get-Command py -ErrorAction SilentlyContinue) {
 }
 
 Write-Host "[CARE-PACK] 1/3 Node.js 패키지를 설치합니다."
-if (Test-Path "package-lock.json") {
-    & npm ci
+if (Test-Path "frontend/package-lock.json") {
+    & npm --prefix frontend ci
 } else {
-    & npm install
+    & npm --prefix frontend install
 }
 Assert-LastExitCode "Node.js 패키지 설치"
 

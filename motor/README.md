@@ -14,7 +14,7 @@ SO-ARM101 팔 제어와 ESP32 모터의 이동·털기 시퀀스를 제공하는
 | [carepack_so101_wrist_homing_backup.json](carepack_so101_wrist_homing_backup.json) | [영점 안내](README_KO.md) | 손목 영점 관련 백업 |
 | [motor_control.py](motor_control.py) | [ESP32 모터·털기 도구](#esp32-모터털기-도구) | Tkinter 화면에서 이동·털기 각도·횟수·간격 전송 |
 | [esp32_motor_controller_with_interval.ino](esp32_motor_controller_with_interval.ino) | [ESP32 모터·털기 도구](#esp32-모터털기-도구) | ESP32의 이동·털기·복귀 시퀀스 |
-| [tests/](tests/) | [테스트 README](tests/README.md) | 팔 로직의 fake-bus 테스트 |
+| [tests/](tests) | [테스트 README](tests/README.md) | 팔 로직의 fake-bus 테스트 |
 
 ## 실행 준비
 
@@ -45,7 +45,7 @@ python motor_control.py
 
 ## 다른 모듈과의 관계
 
-- [웹 팔 서비스](../services/README.md)는 화면용 시뮬레이션을 담당하며, 실제 팔 조작은 이 폴더의 독립 도구에서 수행합니다.
+- [웹 팔 서비스](../frontend/services/README.md)는 화면용 시뮬레이션을 담당하며, 실제 팔 조작은 이 폴더의 독립 도구에서 수행합니다.
 - [자율 작업 시뮬레이터](../autonomy/README.md)는 가상 관측값으로 미션 흐름을 검증합니다. 인식·적재 센서와의 통합은 [개발 로드맵](../README.md#개발-로드맵)에 정리합니다.
 - [라즈봇 서버의 STOP](../raspbot_runtime/SAFETY_REVIEW.md)은 이 폴더의 독립 팔·ESP32 프로그램을 모두 정지시키는 통합 비상정지가 아닙니다.
 

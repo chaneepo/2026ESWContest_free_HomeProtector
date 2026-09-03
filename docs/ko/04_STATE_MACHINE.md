@@ -2,7 +2,7 @@
 
 ## 1. 실행 상태
 
-`types/index.ts`의 `ExecutionState`는 다음 상태를 정의한다.
+`frontend/types/index.ts`의 `ExecutionState`는 다음 상태를 정의한다.
 
 `IDLE`, `PLAN`, `DETECT`, `PICK`, `MOVE`, `PLACE`, `VERIFY`, `RECOVER`, `COMPLETE`, `ERROR`
 
@@ -34,7 +34,7 @@ stateDiagram-v2
 
 ## 2. 현재 시뮬레이션 동작
 
-`mocks/simulationEngine.ts`는 각 물품마다 `PLAN → DETECT → PICK → MOVE → PLACE → VERIFY`를 실행한다. 상태 지연은 DETECT/PICK/MOVE가 약 1.1초, 나머지가 약 0.75초다. 모든 물품 실행이 끝나면 `store/SystemProvider.tsx`가 최종 `COMPLETE`를 설정한다.
+`frontend/mocks/simulationEngine.ts`는 각 물품마다 `PLAN → DETECT → PICK → MOVE → PLACE → VERIFY`를 실행한다. 상태 지연은 DETECT/PICK/MOVE가 약 1.1초, 나머지가 약 0.75초다. 모든 물품 실행이 끝나면 `frontend/store/SystemProvider.tsx`가 최종 `COMPLETE`를 설정한다.
 
 | 상태 | 현재 의미 | 완료 조건 |
 |---|---|---|

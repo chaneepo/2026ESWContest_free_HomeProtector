@@ -2,7 +2,7 @@
 
 ## 1. Implementation status
 
-The repository now includes a PostgreSQL 17 development database, SQLAlchemy 2 models, Alembic migrations, an explicit development seed command, and database tests under `backend/`. Frontend `services/*.ts` still use React in-memory mocks and do not call this backend yet.
+The repository now includes a PostgreSQL 17 development database, SQLAlchemy 2 models, Alembic migrations, an explicit development seed command, and database tests under `backend/`. Frontend `frontend/services/*.ts` still use React in-memory mocks and do not call this backend yet.
 
 Exactly seven application tables are implemented:
 

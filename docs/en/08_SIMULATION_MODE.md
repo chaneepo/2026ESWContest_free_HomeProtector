@@ -8,10 +8,10 @@ Simulation mode validates UI behavior, state transitions, events, and recovery c
 
 | Path | Role |
 |---|---|
-| `mocks/mockData.ts` | Initial device, item, detection, job, and event data |
-| `mocks/simulationEngine.ts` | Steps, delays, cancellation, failure injection |
-| `store/SystemProvider.tsx` | Per-item execution and state/event/history updates |
-| `services/*.ts` | Asynchronous mock boundaries |
+| `frontend/mocks/mockData.ts` | Initial device, item, detection, job, and event data |
+| `frontend/mocks/simulationEngine.ts` | Steps, delays, cancellation, failure injection |
+| `frontend/store/SystemProvider.tsx` | Per-item execution and state/event/history updates |
+| `frontend/services/*.ts` | Asynchronous mock boundaries |
 
 ## 3. Current rules
 
@@ -43,7 +43,7 @@ Stop sets an engine cancel flag. At the next cancellation check, the provider re
 `SystemMode` includes `REAL`, but there is no mode switch or real adapter. Migration should:
 
 1. Preserve views and domain types.
-2. Replace `services/*.ts` with REST/live clients.
+2. Replace `frontend/services/*.ts` with REST/live clients.
 3. Make the server Execution Engine authoritative.
 4. Expose failure injection only in development.
 5. Determine device state from real heartbeats.

@@ -8,10 +8,10 @@
 
 | 경로 | 역할 |
 |---|---|
-| `mocks/mockData.ts` | 장치, 물품, 인식, 작업, 이벤트 초기값 |
-| `mocks/simulationEngine.ts` | 단계 실행, 지연, 취소, 실패 주입 |
-| `store/SystemProvider.tsx` | 물품별 실행, 상태·이벤트·이력 갱신 |
-| `services/*.ts` | 비동기 mock 호출 경계 |
+| `frontend/mocks/mockData.ts` | 장치, 물품, 인식, 작업, 이벤트 초기값 |
+| `frontend/mocks/simulationEngine.ts` | 단계 실행, 지연, 취소, 실패 주입 |
+| `frontend/store/SystemProvider.tsx` | 물품별 실행, 상태·이벤트·이력 갱신 |
+| `frontend/services/*.ts` | 비동기 mock 호출 경계 |
 
 ## 3. 현재 실행 규칙
 
@@ -45,7 +45,7 @@
 `SystemMode`에는 `REAL` 값이 있지만 전환 UI와 실제 어댑터는 없다. 전환 시에는 다음 원칙을 적용한다.
 
 1. View와 도메인 타입은 유지한다.
-2. `services/*.ts`를 REST/실시간 client로 교체한다.
+2. `frontend/services/*.ts`를 REST/실시간 client로 교체한다.
 3. 실행 상태의 기준을 서버 Execution Engine으로 이동한다.
 4. 시뮬레이션 failure target은 개발 환경에서만 노출한다.
 5. 서버와 장치의 연결 상태를 실제 heartbeat로 판단한다.

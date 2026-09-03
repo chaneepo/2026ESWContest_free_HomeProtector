@@ -26,7 +26,7 @@ flowchart TD
     SP --> SE[SimulationEngine]
 ```
 
-All current data flows remain inside the browser process. `store/SystemProvider.tsx` owns UI state, job orchestration, events, and emergency-stop simulation. `mocks/simulationEngine.ts` provides timed steps, cancellation, and failure injection.
+All current data flows remain inside the browser process. `frontend/store/SystemProvider.tsx` owns UI state, job orchestration, events, and emergency-stop simulation. `frontend/mocks/simulationEngine.ts` provides timed steps, cancellation, and failure injection.
 
 ## 3. Target architecture
 

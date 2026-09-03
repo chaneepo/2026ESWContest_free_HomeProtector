@@ -2,7 +2,7 @@
 
 ## 1. 상태와 범위
 
-FastAPI 서버 기반, PostgreSQL 세션과 `GET /health`를 제공한다. 아래 업무 API는 모두 **계획된 계약**이며 `services/*.ts`는 메모리 mock으로 화면 흐름을 제공한다. 실제 구현 시 `/api/v1` 버전 경로와 JSON을 사용하고 장치 호출은 인증된 내부 서비스만 허용한다.
+FastAPI 서버 기반, PostgreSQL 세션과 `GET /health`를 제공한다. 아래 업무 API는 모두 **계획된 계약**이며 `frontend/services/*.ts`는 메모리 mock으로 화면 흐름을 제공한다. 실제 구현 시 `/api/v1` 버전 경로와 JSON을 사용하고 장치 호출은 인증된 내부 서비스만 허용한다.
 
 ## 2. 공통 규칙
 
@@ -52,7 +52,7 @@ FastAPI 서버 기반, PostgreSQL 세션과 `GET /health`를 제공한다. 아�
 | 계획 | POST | `/api/v1/arm/stop` | 로봇 즉시 중지 요청 |
 | 계획 | GET | `/api/v1/events` | 이벤트 필터 조회 |
 
-`services/armService.ts`의 `/api/arm/*`는 프론트엔드에 표시하는 인터페이스 설계다. 서버 연동 단계에서 위 버전 경로로 통일하거나 호환 정책을 명시한다.
+`frontend/services/armService.ts`의 `/api/arm/*`는 프론트엔드에 표시하는 인터페이스 설계다. 서버 연동 단계에서 위 버전 경로로 통일하거나 호환 정책을 명시한다.
 
 ## 4. 시스템 API
 

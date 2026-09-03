@@ -17,16 +17,16 @@ React Router, Zustand, Axios는 현재 의존성에 없다.
 
 | 경로 | 역할 |
 |---|---|
-| `app/page.tsx` | 단일 진입 화면, `ControlCenter` 렌더링 |
-| `app/layout.tsx` | 루트 레이아웃과 메타데이터 |
-| `components/ControlCenter.tsx` | 사이드바, 상단 상태, 페이지 선택 |
-| `components/ui.tsx` | 공통 배지·카드·버튼 등 |
-| `store/SystemProvider.tsx` | 전역 상태와 실행 유스케이스 |
-| `types/index.ts` | 도메인 타입과 enum |
-| `services/*.ts` | 장치·작업·물품·이벤트 접근 경계 |
-| `mocks/mockData.ts` | 초기 시뮬레이션 데이터 |
-| `mocks/simulationEngine.ts` | 작업 단계 진행과 실패 주입 |
-| `views/*.tsx` | 기능별 화면 |
+| `frontend/app/page.tsx` | 단일 진입 화면, `ControlCenter` 렌더링 |
+| `frontend/app/layout.tsx` | 루트 레이아웃과 메타데이터 |
+| `frontend/components/ControlCenter.tsx` | 사이드바, 상단 상태, 페이지 선택 |
+| `frontend/components/ui.tsx` | 공통 배지·카드·버튼 등 |
+| `frontend/store/SystemProvider.tsx` | 전역 상태와 실행 유스케이스 |
+| `frontend/types/index.ts` | 도메인 타입과 enum |
+| `frontend/services/*.ts` | 장치·작업·물품·이벤트 접근 경계 |
+| `frontend/mocks/mockData.ts` | 초기 시뮬레이션 데이터 |
+| `frontend/mocks/simulationEngine.ts` | 작업 단계 진행과 실패 주입 |
+| `frontend/views/*.tsx` | 기능별 화면 |
 
 ## 3. 화면과 기능
 
@@ -63,7 +63,7 @@ sequenceDiagram
 
 ## 6. 실제 연동 시 변경 지점
 
-화면 컴포넌트가 하드웨어를 직접 호출하지 않도록 유지한다. `services/*.ts`를 HTTP/실시간 클라이언트로 교체하고 `SystemProvider`는 같은 도메인 타입을 소비하도록 한다. 서버 상태가 기준이 되면 낙관적 UI보다 서버가 반환한 상태·버전·타임스탬프를 우선한다.
+화면 컴포넌트가 하드웨어를 직접 호출하지 않도록 유지한다. `frontend/services/*.ts`를 HTTP/실시간 클라이언트로 교체하고 `SystemProvider`는 같은 도메인 타입을 소비하도록 한다. 서버 상태가 기준이 되면 낙관적 UI보다 서버가 반환한 상태·버전·타임스탬프를 우선한다.
 
 권장 추가 작업:
 

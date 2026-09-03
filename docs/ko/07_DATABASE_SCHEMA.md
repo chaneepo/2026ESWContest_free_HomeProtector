@@ -2,7 +2,7 @@
 
 ## 1. 구현 상태
 
-`backend/`는 PostgreSQL 17 개발 DB, SQLAlchemy 2 모델, Alembic 마이그레이션, 명시적 개발 시드와 DB 테스트를 제공한다. 프론트엔드 `services/*.ts`는 React 메모리 mock으로 화면 데이터를 관리하며, 백엔드 API 연결은 확장 계획에 포함된다.
+`backend/`는 PostgreSQL 17 개발 DB, SQLAlchemy 2 모델, Alembic 마이그레이션, 명시적 개발 시드와 DB 테스트를 제공한다. 프론트엔드 `frontend/services/*.ts`는 React 메모리 mock으로 화면 데이터를 관리하며, 백엔드 API 연결은 확장 계획에 포함된다.
 
 구현된 핵심 테이블은 정확히 다음 일곱 개다.
 

@@ -11,7 +11,7 @@
 - `message`
 - 선택적 `jobId`
 
-프론트엔드 이벤트는 `services/eventService.ts`와 `SystemProvider`가 메모리에 추가한다. 백엔드는 별도로 `job_events` 영구 테이블과 `event_type`, `job_item_id`, `step`, `device`, `severity`, `metadata_json` 모델을 제공한다. 프론트엔드 이벤트의 영구 저장 연동은 업무 API 확장 단계에서 진행할 계획이다.
+프론트엔드 이벤트는 `frontend/services/eventService.ts`와 `SystemProvider`가 메모리에 추가한다. 백엔드는 별도로 `job_events` 영구 테이블과 `event_type`, `job_item_id`, `step`, `device`, `severity`, `metadata_json` 모델을 제공한다. 프론트엔드 이벤트의 영구 저장 연동은 업무 API 확장 단계에서 진행할 계획이다.
 
 ## 2. 목표 API 페이로드
 

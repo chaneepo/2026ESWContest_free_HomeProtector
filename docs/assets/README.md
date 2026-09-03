@@ -16,4 +16,4 @@ GitHub README에서 사용하는 CARE-PACK 배너를 보관합니다.
 
 ## 알아둘 점
 
-문서용 SVG는 프로젝트 소개와 구조 설명에 사용하는 도식입니다. 웹 앱의 공유 이미지는 별도 [public 폴더](../../public/README.md)에 있습니다.
+문서용 SVG는 프로젝트 소개와 구조 설명에 사용하는 도식입니다. 웹 앱의 공유 이미지는 별도 [public 폴더](../../frontend/public/README.md)에 있습니다.

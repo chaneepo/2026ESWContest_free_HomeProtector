@@ -2,7 +2,7 @@
 
 ## 1. Status and scope
 
-The repository now includes a FastAPI server foundation, PostgreSQL sessions, and `GET /health`. Every business endpoint below remains a **planned contract**, and current `services/*.ts` modules still call in-memory mocks. Implement business routes under the versioned `/api/v1` JSON API and restrict device commands to authenticated, authorized clients.
+The repository now includes a FastAPI server foundation, PostgreSQL sessions, and `GET /health`. Every business endpoint below remains a **planned contract**, and current `frontend/services/*.ts` modules still call in-memory mocks. Implement business routes under the versioned `/api/v1` JSON API and restrict device commands to authenticated, authorized clients.
 
 ## 2. Common conventions
 
@@ -52,7 +52,7 @@ Primary error statuses are `400` invalid input, `404` not found, `409` state con
 | Planned | POST | `/api/v1/arm/stop` | Request immediate robot stop |
 | Planned | GET | `/api/v1/events` | Filter event logs |
 
-The `/api/arm/*` paths in `services/armService.ts` are display-only drafts, not working server routes. A backend must standardize them or document a compatibility layer.
+The `/api/arm/*` paths in `frontend/services/armService.ts` are display-only drafts, not working server routes. A backend must standardize them or document a compatibility layer.
 
 ## 4. System API
 

@@ -2,7 +2,7 @@
 
 ## 1. 현재 구현
 
-`services/armService.ts`는 다음 수동 명령을 약 350ms 지연 후 항상 성공으로 반환하는 시뮬레이션이다.
+`frontend/services/armService.ts`는 다음 수동 명령을 약 350ms 지연 후 항상 성공으로 반환하는 시뮬레이션이다.
 
 - `HOME`
 - `SAFE`

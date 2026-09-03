@@ -26,7 +26,7 @@ flowchart TD
     SP --> SE[SimulationEngine]
 ```
 
-현재 데이터 흐름은 모두 브라우저 프로세스 안에서 끝난다. `store/SystemProvider.tsx`가 화면 상태, 작업 실행, 이벤트, 비상정지를 중앙 관리하고 `mocks/simulationEngine.ts`가 시간 지연과 실패 주입을 수행한다.
+현재 데이터 흐름은 모두 브라우저 프로세스 안에서 끝난다. `frontend/store/SystemProvider.tsx`가 화면 상태, 작업 실행, 이벤트, 비상정지를 중앙 관리하고 `frontend/mocks/simulationEngine.ts`가 시간 지연과 실패 주입을 수행한다.
 
 ## 3. 목표 아키텍처
 

@@ -2,7 +2,7 @@
 
 ## 1. Execution states
 
-`types/index.ts` defines:
+`frontend/types/index.ts` defines:
 
 `IDLE`, `PLAN`, `DETECT`, `PICK`, `MOVE`, `PLACE`, `VERIFY`, `RECOVER`, `COMPLETE`, `ERROR`
 
@@ -34,7 +34,7 @@ stateDiagram-v2
 
 ## 2. Current simulation behavior
 
-For every item, `mocks/simulationEngine.ts` runs `PLAN → DETECT → PICK → MOVE → PLACE → VERIFY`. DETECT, PICK, and MOVE take about 1.1 seconds; other steps take about 0.75 seconds. After all items finish, `store/SystemProvider.tsx` sets `COMPLETE`.
+For every item, `frontend/mocks/simulationEngine.ts` runs `PLAN → DETECT → PICK → MOVE → PLACE → VERIFY`. DETECT, PICK, and MOVE take about 1.1 seconds; other steps take about 0.75 seconds. After all items finish, `frontend/store/SystemProvider.tsx` sets `COMPLETE`.
 
 | State | Current meaning | Exit condition |
 |---|---|---|

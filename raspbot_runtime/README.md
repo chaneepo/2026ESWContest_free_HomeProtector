@@ -35,9 +35,9 @@ python3 server.py --host 127.0.0.1 --port 8090
 
 | 폴더 | Documentation | 역할 |
 |---|---|---|
-| [chan_control/](chan_control/) | [제어 래퍼 안내](chan_control/README.md) | I2C 드라이버·짧은 이동·센서 |
-| [web/](web/) | [컨트롤러 UI 안내](web/README.md) | Pi 화면·공통 운전 클라이언트 |
-| [tests/](tests/) | [안전 테스트 안내](tests/README.md) | 가상 하드웨어·HTTP·브라우저 회귀 테스트 |
+| [chan_control/](chan_control) | [제어 래퍼 안내](chan_control/README.md) | I2C 드라이버·짧은 이동·센서 |
+| [web/](web) | [컨트롤러 UI 안내](web/README.md) | Pi 화면·공통 운전 클라이언트 |
+| [tests/](tests) | [안전 테스트 안내](tests/README.md) | 가상 하드웨어·HTTP·브라우저 회귀 테스트 |
 
 이 폴더는 Raspberry Pi에 이미 설치된 `raspbot==0.1.2` 패키지를 이용해
 CARE-PACK 이동 로봇을 개발하기 위한 별도 작업공간입니다.
@@ -69,9 +69,9 @@ CARE-PACK 이동 로봇을 개발하기 위한 별도 작업공간입니다.
 - Mac 원본과 Raspberry Pi 실행본을 분리한 배포 구조 구성
 
 배터리 충전 및 재가동 후에는 낮은 속도와 0.1초 설정으로 바퀴 방향을 다시
-확인합니다. 세부 진행 기록은 [`PROGRESS.md`](./PROGRESS.md), 배선·충전·운영
-절차는 [`OPERATIONS.md`](./OPERATIONS.md), 전체 구조는
-[`ARCHITECTURE.md`](./ARCHITECTURE.md)를 참고합니다.
+확인합니다. 세부 진행 기록은 [`PROGRESS.md`](PROGRESS.md), 배선·충전·운영
+절차는 [`OPERATIONS.md`](OPERATIONS.md), 전체 구조는
+[`ARCHITECTURE.md`](ARCHITECTURE.md)를 참고합니다.
 
 ## 1. 접속 후 환경 활성화
 
@@ -267,7 +267,7 @@ disown
 것 같으면 `ss -tlnp | grep 8090`(또는 `8000`)으로 확인하고, 로그는
 `/tmp/chan_server.log` / `/tmp/vision_server.log`에서 확인합니다.
 
-### 3. 맥 쪽 설정 (`.env.local`, 저장소 루트)
+### 3. 맥 쪽 설정 (`frontend/.env.local`, 저장소 루트)
 
 ```bash
 CAMERA_API_URL=http://<tracelab-desktop의 IPv6 주소>:8000
@@ -286,7 +286,7 @@ hostname -I                              # IPv4 목록
 ip -6 addr show scope global | grep inet6  # IPv6 목록 (mngtmpaddr 쪽이 비교적 안정적)
 ```
 
-`.env.local` 수정 후에는 맥에서 `npm run dev`를 재시작해야 반영됩니다.
+`frontend/.env.local` 수정 후에는 맥에서 `npm --prefix frontend run dev`를 재시작해야 반영됩니다.
 
 ### 4. 접근 제한
 

@@ -82,7 +82,7 @@ YOLO segmentation 라벨 형식(`class_id x1 y1 x2 y2 ... xn yn`)을 사용하�
 
 - [raspbot_runtime/yolo_demo.py](../raspbot_runtime/yolo_demo.py)는 사전 학습된 COCO 클래스 `yolo11n.pt`로 실시간 라이브 데모를 보여줍니다. 이 폴더의 `best.pt`는 `car_key`·`lip_balm`·`watch` 전용으로 직접 학습한 별도 모델이며, 두 모델은 아직 통합되지 않았습니다.
 - [비전 시스템 설계](../docs/ko/05_VISION_DESIGN.md)의 "단계적 확장" 6단계(`YOLO 등 일반 객체 탐지를 보조 수단으로 추가`)에 해당하는 실제 학습 결과물입니다. marker 기반 좌표 변환·로봇 좌표 연결과는 아직 연결되지 않았습니다.
-- 웹 제어센터의 [비전 화면](../views/README.md)은 여전히 `mocks/`의 임의 좌표를 사용합니다. 이 모델의 추론 결과를 화면·`Execution Engine`에 연결하는 작업은 향후 계획입니다.
+- 웹 제어센터의 [비전 화면](../frontend/views/README.md)은 여전히 `mocks/`의 임의 좌표를 사용합니다. 이 모델의 추론 결과를 화면·`Execution Engine`에 연결하는 작업은 향후 계획입니다.
 
 ## 알아둘 점
 

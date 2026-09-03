@@ -2,7 +2,7 @@
 
 ## 1. Current status
 
-The current vision feature is a simulation implemented by `services/visionService.ts`, `mocks/mockData.ts`, and `views/VisionPage.tsx`. It does not process camera frames or include OpenCV, AprilTag/ArUco detection, or calibration.
+The current vision feature is a simulation implemented by `frontend/services/visionService.ts`, `frontend/mocks/mockData.ts`, and `frontend/views/VisionPage.tsx`. It does not process camera frames or include OpenCV, AprilTag/ArUco detection, or calibration.
 
 The simulation randomly chooses an enabled item and one of `A1`, `A2`, `B1`, `B2`, `B3`, or `C2`, then generates camera-frame XYZ coordinates. The view renders the result on a 3×3 storage grid.
 
