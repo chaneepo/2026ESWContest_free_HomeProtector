@@ -6,6 +6,14 @@ CARE-PACK plans items for an outing, uses a robot arm to move them into a bag, a
 
 Although this guide lives in `docs/setup/`, run the commands from the **project root** containing `package.json`, unless explicitly stated otherwise.
 
+## Personal deployment settings and Git
+
+`.openai/` contains personal ChatGPT Sites connection settings and is excluded from Git. A fresh clone can run `npm run dev` and `npm run build` without `.openai/hosting.json`. Without that file, Sites deployment metadata packaging and local mock sign-in are disabled, with no D1 or R2 bindings. Docker PostgreSQL settings are unaffected.
+
+Existing local files are preserved. When the file exists, its bindings and the Sites plugin remain enabled. Invalid JSON, malformed binding values, and read errors fail explicitly. The deployment owner must retain their verified local connection file; teammates do not need to copy that personal project ID. Never store API keys or passwords in this file or Git.
+
+Run the regression tests from the project root with `node --test scripts/load-hosting-config.test.mjs`.
+
 ## Development environment setup
 
 The current web frontend runs on Node.js. The Python virtual environment isolates packages for the future FastAPI backend, OpenCV vision pipeline, and SO-ARM101 controller from the system Python installation.

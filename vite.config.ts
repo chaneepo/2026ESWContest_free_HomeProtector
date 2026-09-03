@@ -2,12 +2,13 @@ import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
-import hostingConfig from './.openai/hosting.json';
+import { loadHostingConfig } from './scripts/load-hosting-config.mjs';
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   '00000000-0000-4000-8000-000000000000';
 
-const { d1, r2 } = hostingConfig;
+const hostingConfig = loadHostingConfig(new URL('./.openai/hosting.json', import.meta.url));
+const { d1, r2 } = hostingConfig ?? { d1: null, r2: null };
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
@@ -51,7 +52,8 @@ export default defineConfig(async () => {
       : undefined,
     plugins: [
       vinext(),
-      sites(),
+      // Sites packaging requires its local manifest. A fresh clone has none.
+      ...(hostingConfig ? [sites()] : []),
       cloudflare({
         viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
         config: localBindingConfig,

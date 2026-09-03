@@ -6,6 +6,14 @@ CARE-PACK은 외출 준비물을 계획하고, 로봇팔이 물품을 가방으�
 
 이 문서는 `docs/setup/`에 있지만, 아래 명령은 별도 안내가 없으면 `package.json`이 있는 **프로젝트 루트**에서 실행합니다.
 
+## 개인 배포 설정과 Git 제외
+
+`.openai/`는 개인 ChatGPT Sites 연결 설정이므로 Git에 포함하지 않습니다. 새로 clone한 환경에 `.openai/hosting.json`이 없어도 `npm run dev`와 `npm run build`를 사용할 수 있습니다. 파일이 없으면 Sites 전용 배포 메타데이터 처리와 로컬 모의 로그인을 사용하지 않고, D1·R2 바인딩 없이 실행합니다. Docker PostgreSQL 설정에는 영향을 주지 않습니다.
+
+기존 로컬 파일은 그대로 보존하며, 파일이 있으면 해당 설정과 Sites 플러그인을 사용합니다. 잘못된 JSON·바인딩 형식·읽기 오류는 명시적인 오류로 처리합니다. 기존 사이트를 배포하는 담당자는 검증된 로컬 연결 파일을 유지해야 하며, 다른 팀원이 그 개인 프로젝트 ID를 복사할 필요는 없습니다. API 키·비밀번호는 이 파일이나 Git에 넣지 마세요.
+
+관련 회귀 검사는 프로젝트 루트에서 `node --test scripts/load-hosting-config.test.mjs`로 실행합니다.
+
 ## 개발 환경 설정
 
 현재 웹 프론트엔드는 Node.js로 실행한다. Python 가상환경은 앞으로 추가할 FastAPI 백엔드, OpenCV 비전, SO-ARM101 제어 모듈의 패키지를 시스템 Python과 분리하기 위해 사용한다.

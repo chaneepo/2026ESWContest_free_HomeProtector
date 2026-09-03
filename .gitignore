@@ -38,6 +38,8 @@ yarn-error.log*
 !.env.example
 
 # deployment and generated files
+# Keep local Sites hosting settings out of version control
+/.openai/
 .vercel
 next-env.d.ts
 /dist/
