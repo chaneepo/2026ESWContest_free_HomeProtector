@@ -18,8 +18,8 @@ const keyToAction: Record<string, string> = {
   KeyQ: 'strafe_left', KeyE: 'strafe_right',
 };
 
-export function RaspbotRemote({ emergencyLocked = false }: { emergencyLocked?: boolean }) {
-  const [open, setOpen] = useState(false);
+export function RaspbotRemote({ emergencyLocked = false, embedded = false }: { emergencyLocked?: boolean; embedded?: boolean }) {
+  const [open, setOpen] = useState(embedded);
   const [status, setStatus] = useState<ControlStatus>({});
   const [safetyChecked, setSafetyChecked] = useState(false);
   const client = useRef<ControlClient | null>(null);
@@ -70,7 +70,7 @@ export function RaspbotRemote({ emergencyLocked = false }: { emergencyLocked?: b
     };
   }, [open]);
 
-  return <div className={`raspbot-remote ${open ? 'open' : ''}`}>
+  return <div className={`raspbot-remote ${embedded ? 'remote-embedded' : ''} ${open ? 'open' : ''}`}>
     {open && <aside className="remote-panel" aria-label="라즈봇 방향 리모컨">
       <header><div><small>RASPBOT V2</small><b>방향 리모컨</b></div><span><i className={status.online ? 'dot green' : 'dot red'} />{status.message || '연결 확인 중 · 이동 잠금'}</span></header>
       <div className="remote-mode-switch">
@@ -87,8 +87,8 @@ export function RaspbotRemote({ emergencyLocked = false }: { emergencyLocked?: b
       ><strong>{icon}</strong><small>{label}</small></button>)}</div>
       <p>{status.movement_enabled ? '방향키/WASD 이동 · Q/E 평행이동 · Space/Esc 정지' : '안전 확인 후 실기모드로 전환하세요. 통신 끊김·창 전환·STOP 후에는 다시 잠깁니다.'}</p>
     </aside>}
-    <button className="remote-toggle" aria-expanded={open} onClick={() => { if (open) client.current?.suspend(); setSafetyChecked(false); setOpen(!open); }}>
+    {!embedded && <button className="remote-toggle" aria-expanded={open} onClick={() => { if (open) client.current?.suspend(); setSafetyChecked(false); setOpen(!open); }}>
       <span>{open ? '×' : '✥'}</span>{open ? '리모컨 닫기' : '라즈봇 리모컨'}
-    </button>
+    </button>}
   </div>;
 }

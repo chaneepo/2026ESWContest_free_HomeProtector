@@ -1,6 +1,6 @@
 // Shared by the Pi page and the integrated React controller. No automatic arming.
 export class ControlClient {
-  constructor(base, notify = () => {}, transport = fetch) {
+  constructor(base, notify = () => {}, transport = (...args) => fetch(...args)) {
     this.base = base;
     this.notify = notify;
     this.transport = transport;

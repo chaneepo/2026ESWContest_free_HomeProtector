@@ -27,7 +27,7 @@ interface SystemContextValue {
 const SystemContext = createContext<SystemContextValue | null>(null);
 
 export function SystemProvider({ children }: { children: React.ReactNode }) {
-  const [page, setPage] = useState<PageKey>('dashboard');
+  const [page, setPage] = useState<PageKey>('mapping');
   const [status, setStatus] = useState<SystemStatus>(mockSystemStatus);
   const [arm, setArm] = useState<ArmStatus>(mockArmStatus);
   const [currentJob, setCurrentJob] = useState<Job | null>(null);

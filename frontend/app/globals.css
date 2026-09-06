@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './mapping.css';
 
 :root { --ink:#13213a; --muted:#718096; --line:#e4eaf1; --blue:#1769e0; --blue-dark:#0e4eae; --surface:#fff; --canvas:#f4f7fb; }
 * { box-sizing:border-box; }
@@ -88,3 +89,18 @@ table{width:100%;border-collapse:collapse}th{height:38px;padding:0 12px;backgrou
 
 @media (max-width:1200px){.automatic-layout,.vision-layout{grid-template-columns:1fr}.auto-side{grid-template-columns:1fr 1fr}.manual-layout{grid-template-columns:1fr}.summary-grid{grid-template-columns:repeat(3,1fr)}.items-panel,.history-panel,.detection-table{overflow-x:auto}.items-panel table,.history-panel table,.detection-table table{min-width:820px}.vision-guide{align-items:flex-start;flex-direction:column}}
 @media (max-width:760px){.emergency-strip{left:0}.sidebar{position:sticky;top:0;z-index:30}.brand small{display:none}.topbar{position:sticky;top:68px}.mode-cluster{gap:7px}.top-actions{gap:6px}.automatic-layout,.vision-layout,.manual-layout{display:block}.auto-side,.vision-side{display:block}.auto-side .panel,.vision-side .panel,.manual-layout .panel{margin-top:12px}.simulation-warning{grid-template-columns:36px 1fr}.simulation-warning>span{display:none}.summary-grid{grid-template-columns:repeat(2,1fr)}.auto-job-head{grid-template-columns:repeat(2,1fr)}.status-grid{grid-template-columns:repeat(2,1fr);gap:12px}.camera-view{height:380px}.workspace-grid{inset:35px 25px 48px}.form-row{grid-template-columns:1fr}.modal-backdrop{padding:8px}.event-row{grid-template-columns:50px 50px 1fr}.event-level{display:none}.vision-side{margin-top:12px}.vision-guide ol{display:grid;grid-template-columns:1fr 1fr}.vision-guide li+li::before{display:none}.raspbot-remote{right:13px;bottom:13px}.remote-panel{width:min(310px,calc(100vw - 26px))}}
+
+/* 사이드바에서 여는 실물 리모컨: 고정 팝업이 아닌 페이지 내부 배치 */
+.raspbot-remote-page{max-width:800px}
+.remote-hardware-notice{margin:0 0 20px;padding:14px 16px;border:1px solid #efdbb5;border-radius:10px;background:#fffbf1;color:#856530;font-size:12px;line-height:1.8}
+.raspbot-remote.remote-embedded{position:static;display:block;z-index:auto;width:100%}
+.remote-embedded .remote-panel{width:100%;max-width:520px;box-sizing:border-box;padding:24px;box-shadow:none;background:#fff}
+.remote-embedded .remote-panel header b{font-size:19px}
+.remote-embedded .remote-panel header>span{max-width:230px;font-size:11px}
+.remote-embedded .remote-mode-switch{font-size:12px;padding:18px 0;gap:14px}
+.remote-embedded .remote-mode-switch button{height:38px;font-size:12px}
+.remote-embedded .remote-pad{grid-template-columns:repeat(3,minmax(0,100px));grid-template-rows:repeat(3,76px);gap:10px;margin:24px 0 18px}
+.remote-embedded .remote-pad button strong{font-size:24px}
+.remote-embedded .remote-pad button small{font-size:11px}
+.remote-embedded .remote-panel>p{font-size:11px;line-height:1.7}
+@media(max-width:760px){.remote-embedded .remote-panel{padding:16px}.remote-embedded .remote-panel header{align-items:flex-start}.remote-embedded .remote-panel header>span{max-width:55%}.remote-embedded .remote-panel header b{font-size:16px}}

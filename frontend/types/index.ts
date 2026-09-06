@@ -4,7 +4,7 @@ export type JobStatus = 'WAITING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'CANCELLE
 export type ExecutionState = 'IDLE' | 'PLAN' | 'DETECT' | 'PICK' | 'MOVE' | 'PLACE' | 'VERIFY' | 'RECOVER' | 'COMPLETE' | 'ERROR';
 export type EventLevel = 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
 export type EventSource = 'SYSTEM' | 'VISION' | 'ARM' | 'ESP32' | 'RAZBOT';
-export type PageKey = 'dashboard' | 'automatic' | 'manual' | 'vision' | 'items' | 'history';
+export type PageKey = 'dashboard' | 'automatic' | 'manual' | 'vision' | 'items' | 'history' | 'mapping' | 'remote';
 export type FailureTarget = 'NONE' | 'PICK' | 'VERIFY';
 
 export interface SystemStatus {
